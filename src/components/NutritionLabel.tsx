@@ -221,22 +221,35 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
   const [heightFitScale, setHeightFitScale] = useState(1);
   const [heightOverflow, setHeightOverflow] = useState(false);
   const fitSignature = `${product.labelHeightCm}|${blocksKey}|${width}|${product.compact}|${product.twoColumns}|${split ? 'split' : 'nosplit'}`;
-  const lastFitSignature = useRef<string | null>(null);
+  // El ajuste de escala por alto fijo mide una sola vez por firma de
+  // contenido y ya no vuelve a tocar el estado después de eso. El
+  // texto puede reacomodarse en renglones distintos según el tamaño de
+  // letra, así que "medir -> ajustar -> volver a medir" puede no converger
+  // nunca y generar un ciclo infinito de renders; por eso aquí se acepta
+  // una sola pasada (aproximada) en vez de iterar hasta encajar exacto.
+  const fitPhase = useRef<{ signature: string; phase: 'measuring' | 'done' }>({
+    signature: '',
+    phase: 'done',
+  });
 
   useLayoutEffect(() => {
     if (!product.labelHeightCm) {
       if (heightFitScale !== 1) setHeightFitScale(1);
       if (heightOverflow) setHeightOverflow(false);
-      lastFitSignature.current = fitSignature;
+      fitPhase.current = { signature: fitSignature, phase: 'done' };
       return;
     }
-    if (lastFitSignature.current !== fitSignature) {
-      lastFitSignature.current = fitSignature;
+
+    if (fitPhase.current.signature !== fitSignature) {
+      fitPhase.current = { signature: fitSignature, phase: 'measuring' };
       if (heightFitScale !== 1) {
         setHeightFitScale(1);
-        return; // se vuelve a medir en el siguiente pase, ya a escala 1
+        return; // se mide en el siguiente pase, ya renderizado a escala 1
       }
     }
+
+    if (fitPhase.current.phase === 'done') return;
+
     const el = rootRef.current;
     if (!el) return;
     // scrollHeight (no offsetHeight) porque el propio div ya trae
@@ -244,11 +257,10 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
     // alto ya recortado en vez del alto real que pide el contenido.
     const naturalCm = pxToCm(el.scrollHeight);
     const targetCm = product.labelHeightCm as number;
+    fitPhase.current = { signature: fitSignature, phase: 'done' };
     if (naturalCm > targetCm + 0.02) {
       const needed = Math.max(MIN_HEIGHT_FIT_SCALE, targetCm / naturalCm);
-      if (Math.abs(needed - heightFitScale) > 0.01) {
-        setHeightFitScale(needed);
-      }
+      setHeightFitScale(needed);
       setHeightOverflow(needed <= MIN_HEIGHT_FIT_SCALE + 0.001);
     } else {
       setHeightOverflow(false);
