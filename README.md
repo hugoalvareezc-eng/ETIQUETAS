@@ -53,6 +53,10 @@ para revisar, imprimir o exportar como imagen.
   compacto" en "Datos generales" para reducir espacios y tamaño de letra sin
   quitar información. Se puede combinar con las 2 columnas para bajar la
   altura todavía más.
+- **Escalado continuo por ancho**: la letra, los sellos de advertencia y los
+  espacios internos se van achicando en proporción real al ancho de la
+  etiqueta (no en saltos fijos), así que una etiqueta muy angosta (2-3 cm)
+  se ve chica pero ordenada, en vez de amontonarse o desbordar el borde.
 - **Exportar / importar catálogo (JSON)**: desde "Mis productos" puedes
   descargar todos tus productos en un archivo `.json` (respaldo, o para
   pasarlo a otra computadora), y volver a importarlo con "Importar catálogo".

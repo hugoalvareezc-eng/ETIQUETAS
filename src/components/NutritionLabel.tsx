@@ -16,16 +16,21 @@ interface Block {
 }
 
 const COLUMN_GAP_CM = 0.5;
+// Ancho de referencia para el que el texto se ve a tamaño "normal" (0.9rem).
+// Por debajo de esto, la letra y el "relleno" (sellos, márgenes, celdas)
+// se van achicando en proporción al ancho real, en vez de quedarse fijos
+// en un tamaño mínimo y amontonarse cuando la etiqueta es muy angosta.
+const BASELINE_WIDTH_CM = 9;
+const MIN_WIDTH_SCALE = 0.45;
 
 function fmt(n: number): string {
   if (!isFinite(n)) return '0';
   return Number(n.toFixed(2)).toString();
 }
 
-function sizeVariant(widthCm: number): 'normal' | 'compact' | 'tiny' {
-  if (widthCm < 5.5) return 'tiny';
-  if (widthCm < 6.5) return 'compact';
-  return 'normal';
+function widthScale(widthCm: number): number {
+  const raw = widthCm / BASELINE_WIDTH_CM;
+  return Math.max(MIN_WIDTH_SCALE, Math.min(1, raw));
 }
 
 function buildBlocks(product: Product, sections: ReturnType<typeof getSections>, unitSuffix: string): Block[] {
@@ -179,6 +184,7 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm }, 
   const unitSuffix = product.isLiquid ? 'ml' : 'g';
   const width = widthCm ?? product.labelWidthCm;
   const columnWidth = product.twoColumns ? (width - COLUMN_GAP_CM) / 2 : width;
+  const fontSizeRem = 0.9 * widthScale(width) * (product.compact ? 0.85 : 1);
 
   const blocks = useMemo(
     () => buildBlocks(product, sections, unitSuffix),
@@ -220,9 +226,8 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm }, 
   return (
     <div
       className="nutrition-label"
-      data-size={sizeVariant(width)}
       data-compact={product.compact ? 'true' : undefined}
-      style={{ width: `${width}cm` }}
+      style={{ width: `${width}cm`, fontSize: `${fontSizeRem.toFixed(3)}rem` }}
       ref={ref}
     >
       <div className="label-brand">
