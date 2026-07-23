@@ -37,7 +37,10 @@ para revisar, imprimir o exportar como imagen.
   mismo producto.
 - **Imprime o exporta la etiqueta** como PNG para pegarla en tus etiquetas
   físicas, o usa "Imprimir / Guardar PDF" para generar un PDF con el
-  diálogo de impresión del navegador.
+  diálogo de impresión del navegador. El tamaño de página del PDF se ajusta
+  solo al tamaño real de la etiqueta (ancho/alto de la etiqueta + margen),
+  para no desperdiciar una hoja completa en blanco imprimiendo una sola
+  etiqueta chica.
 - **Secciones opcionales**: en "¿Qué incluir en la etiqueta?" puedes
   desmarcar lo que no quieras imprimir (sellos de advertencia, modo de uso,
   advertencias, ingredientes activos, alérgenos, conservación, etc.). El

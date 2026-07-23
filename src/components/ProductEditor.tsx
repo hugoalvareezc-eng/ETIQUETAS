@@ -4,6 +4,10 @@ import { DictionaryEntry, Product } from '../types';
 import ProductForm from './ProductForm';
 import NutritionLabel from './NutritionLabel';
 import { BASE_DICTIONARY } from '../data/dictionary';
+import { pxToCm } from '../utils/units';
+
+const PRINT_AREA_PADDING_CM = 1; // debe coincidir con ".print-area { padding: 1cm }" en @media print
+const SINGLE_PRINT_STYLE_ID = 'single-label-page-size';
 
 interface Props {
   product: Product;
@@ -29,6 +33,31 @@ export default function ProductEditor({ product, customDictionary, onChange, onB
   }
 
   function printLabel() {
+    // Sin esto, la hoja impresa usa el tamaño de papel por defecto (Carta/A4
+    // completo) y deja un montón de espacio en blanco debajo de una sola
+    // etiqueta chica. Aquí se fuerza el tamaño de página al tamaño real de
+    // la etiqueta (+ el margen de impresión), solo mientras dura esta
+    // impresión — se quita después para no afectar la hoja de varias
+    // etiquetas, que sí necesita tamaño Carta/A4 normal.
+    const widthCm = product.labelWidthCm + PRINT_AREA_PADDING_CM * 2;
+    const heightPx = labelRef.current?.getBoundingClientRect().height ?? 0;
+    const contentHeightCm = product.labelHeightCm || pxToCm(heightPx);
+    const heightCm = contentHeightCm + PRINT_AREA_PADDING_CM * 2;
+
+    let styleEl = document.getElementById(SINGLE_PRINT_STYLE_ID) as HTMLStyleElement | null;
+    if (!styleEl) {
+      styleEl = document.createElement('style');
+      styleEl.id = SINGLE_PRINT_STYLE_ID;
+      document.head.appendChild(styleEl);
+    }
+    styleEl.textContent = `@media print { @page { size: ${widthCm.toFixed(2)}cm ${heightCm.toFixed(2)}cm; margin: 0; } }`;
+
+    function cleanup() {
+      styleEl?.remove();
+      window.removeEventListener('afterprint', cleanup);
+    }
+    window.addEventListener('afterprint', cleanup);
+
     window.print();
   }
 
