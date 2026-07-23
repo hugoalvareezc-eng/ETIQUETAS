@@ -56,6 +56,9 @@ para revisar, imprimir o exportar como imagen.
   varios productos): solo necesita traer los campos que de verdad importan
   (nombre, marca, tabla nutrimental, ingredientes, etc.) — lo demás se
   completa solo con la plantilla de esa categoría.
+- **Buscador y filtro por categoría** en "Mis productos" y en "Imprimir hoja",
+  para encontrar rápido un producto por nombre, marca o sabor cuando el
+  catálogo crece.
 - **Hoja de impresión con varias etiquetas** (pestaña "Imprimir hoja"):
   elige cuántas copias de cada producto necesitas y la app las acomoda solas
   en hojas tamaño Carta o A4 para aprovechar el papel, respetando el ancho de

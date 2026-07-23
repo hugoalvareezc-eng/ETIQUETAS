@@ -123,6 +123,20 @@ button {
   cursor: pointer;
 }
 
+.filter-bar {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  max-width: 640px;
+}
+
+.filter-bar .search-input {
+  flex: 1;
+  min-width: 200px;
+  margin: 0;
+}
+
 .product-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));

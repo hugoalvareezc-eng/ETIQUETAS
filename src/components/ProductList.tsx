@@ -1,7 +1,8 @@
-import { useRef } from 'react';
-import { Product } from '../types';
-import { categoryLabel } from '../data/categories';
+import { useMemo, useRef, useState } from 'react';
+import { Category, Product } from '../types';
+import { CATEGORIES, categoryLabel } from '../data/categories';
 import { downloadProductsJson, parseProductsJson } from '../utils/exportImport';
+import { filterProducts } from '../utils/filterProducts';
 
 interface Props {
   products: Product[];
@@ -13,8 +14,14 @@ interface Props {
 }
 
 export default function ProductList({ products, onOpen, onNew, onDelete, onDuplicate, onImport }: Props) {
-  const sorted = [...products].sort((a, b) => b.updatedAt - a.updatedAt);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [query, setQuery] = useState('');
+  const [category, setCategory] = useState<Category | 'all'>('all');
+
+  const sorted = useMemo(() => {
+    const filtered = filterProducts(products, query, category);
+    return [...filtered].sort((a, b) => b.updatedAt - a.updatedAt);
+  }, [products, query, category]);
 
   function handleExport() {
     downloadProductsJson(products);
@@ -57,12 +64,35 @@ export default function ProductList({ products, onOpen, onNew, onDelete, onDupli
         />
       </div>
 
-      {sorted.length === 0 && (
+      {products.length > 0 && (
+        <div className="filter-bar">
+          <input
+            className="search-input"
+            placeholder="Buscar por nombre, marca o sabor..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <select value={category} onChange={(e) => setCategory(e.target.value as Category | 'all')}>
+            <option value="all">Todas las categorías</option>
+            {CATEGORIES.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {products.length === 0 && (
         <p className="empty-state">
           Todavía no has creado ningún producto. Pulsa "Nuevo producto" y elige una plantilla
           (proteína, pre-entreno, creatina, aminoácidos, vitaminas u otro) para empezar, o
           "Importar catálogo" si ya tienes un archivo JSON con productos.
         </p>
+      )}
+
+      {products.length > 0 && sorted.length === 0 && (
+        <p className="empty-state">No hay productos que coincidan con la búsqueda.</p>
       )}
 
       <div className="product-grid">

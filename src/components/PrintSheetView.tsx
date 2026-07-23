@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Product } from '../types';
-import { categoryLabel } from '../data/categories';
+import { Category, Product } from '../types';
+import { CATEGORIES, categoryLabel } from '../data/categories';
 import { PAGE_SIZES } from '../data/pageSizes';
 import { packLabels, PackItem } from '../utils/packLabels';
 import { pxToCm } from '../utils/units';
+import { filterProducts } from '../utils/filterProducts';
 import NutritionLabel from './NutritionLabel';
 
 interface Props {
@@ -21,6 +22,10 @@ export default function PrintSheetView({ products }: Props) {
   const [marginCm, setMarginCm] = useState(0.8);
   const [gapCm, setGapCm] = useState(0.4);
   const [heights, setHeights] = useState<Record<string, number> | null>(null);
+  const [query, setQuery] = useState('');
+  const [category, setCategory] = useState<Category | 'all'>('all');
+
+  const filteredProducts = useMemo(() => filterProducts(products, query, category), [products, query, category]);
 
   const pageSize = PAGE_SIZES.find((p) => p.id === pageSizeId) ?? PAGE_SIZES[0];
   const contentWidthCm = pageSize.widthCm - 2 * marginCm;
@@ -136,6 +141,25 @@ export default function PrintSheetView({ products }: Props) {
           </label>
         </div>
 
+        {products.length > 0 && (
+          <div className="filter-bar">
+            <input
+              className="search-input"
+              placeholder="Buscar por nombre, marca o sabor..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+            <select value={category} onChange={(e) => setCategory(e.target.value as Category | 'all')}>
+              <option value="all">Todas las categorías</option>
+              {CATEGORIES.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <table className="sheet-selection-table">
           <thead>
             <tr>
@@ -146,7 +170,7 @@ export default function PrintSheetView({ products }: Props) {
             </tr>
           </thead>
           <tbody>
-            {products.map((p) => (
+            {filteredProducts.map((p) => (
               <tr key={p.id}>
                 <td>{p.productNameEs || p.productNameEn || 'Sin nombre'}</td>
                 <td>{categoryLabel(p.category)}</td>
@@ -167,6 +191,10 @@ export default function PrintSheetView({ products }: Props) {
 
         {products.length === 0 && (
           <p className="empty-state">Primero crea al menos un producto en "Mis productos".</p>
+        )}
+
+        {products.length > 0 && filteredProducts.length === 0 && (
+          <p className="empty-state">No hay productos que coincidan con la búsqueda.</p>
         )}
 
         {oversizedProducts.length > 0 && (
