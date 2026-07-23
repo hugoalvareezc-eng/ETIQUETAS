@@ -54,6 +54,14 @@ export default function ProductForm({ product, dictionary, onChange }: Props) {
             </div>
           </label>
           <label>
+            Denominación del producto (qué tipo de producto es, para el panel frontal)
+            <input
+              value={product.denominacionEs}
+              onChange={(e) => patch({ denominacionEs: e.target.value })}
+              placeholder="Ej. Proteína en polvo"
+            />
+          </label>
+          <label>
             Sabor
             <input value={product.flavor} onChange={(e) => patch({ flavor: e.target.value })} />
           </label>

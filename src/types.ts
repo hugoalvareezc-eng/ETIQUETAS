@@ -51,6 +51,7 @@ export interface Product {
   brand: string;
   productNameEn: string;
   productNameEs: string;
+  denominacionEs: string;
   flavor: string;
   netContent: string;
   servingSizeText: string;

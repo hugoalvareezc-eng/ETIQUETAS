@@ -227,6 +227,7 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm }, 
       <div className="label-brand">
         <span className="badge">{categoryLabel(product.category)}</span>
         <h2>{product.productNameEs || 'Nombre del producto'}</h2>
+        {product.denominacionEs && <p className="denominacion">{product.denominacionEs}</p>}
         <p className="muted">
           {product.brand} {product.flavor && `· Sabor: ${product.flavor}`}
           {product.netContent && ` · Contenido neto: ${product.netContent}`}
