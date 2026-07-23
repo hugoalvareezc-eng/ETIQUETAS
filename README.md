@@ -52,7 +52,12 @@ para revisar, imprimir o exportar como imagen.
   ejemplo, un bote grande de proteína) pero el contenido queda muy largo/alto,
   activa "Acomodar el contenido en 2 columnas" en "Datos generales" para que
   la tabla nutrimental, ingredientes, modo de uso y advertencias se
-  distribuyan en dos columnas y la etiqueta salga bastante más baja.
+  distribuyan en dos columnas y la etiqueta salga bastante más baja. La app
+  intenta que ambas columnas queden parejas en altura; si la tabla nutrimental
+  tiene muchos renglones (por ejemplo, con varias vitaminas/minerales extra)
+  y ella sola pesa más que el resto del contenido junto, la tabla se
+  continúa en la segunda columna (como en muchas etiquetas reales de bote
+  ancho) en vez de dejar espacio en blanco de un lado sin remedio.
 - **Modo compacto**: si la etiqueta sigue quedando muy alta (por ejemplo, en
   una etiqueta angosta donde no conviene usar 2 columnas), activa "Modo
   compacto" en "Datos generales" para reducir espacios y tamaño de letra sin
