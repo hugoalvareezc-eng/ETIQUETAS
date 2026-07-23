@@ -38,6 +38,11 @@ para revisar, imprimir o exportar como imagen.
 - **Imprime o exporta la etiqueta** como PNG para pegarla en tus etiquetas
   físicas, o usa "Imprimir / Guardar PDF" para generar un PDF con el
   diálogo de impresión del navegador.
+- **Secciones opcionales**: en "¿Qué incluir en la etiqueta?" puedes
+  desmarcar lo que no quieras imprimir (sellos de advertencia, modo de uso,
+  advertencias, ingredientes activos, alérgenos, conservación, etc.). El
+  dato sigue guardado, solo se oculta de la vista previa/impresión, así que
+  lo puedes reactivar cuando quieras sin volver a capturarlo.
 - **Hoja de impresión con varias etiquetas** (pestaña "Imprimir hoja"):
   elige cuántas copias de cada producto necesitas y la app las acomoda solas
   en hojas tamaño Carta o A4 para aprovechar el papel, respetando el ancho de

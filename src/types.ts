@@ -33,6 +33,18 @@ export interface ActiveIngredient {
   unit: string;
 }
 
+export type SectionKey =
+  | 'seals'
+  | 'activeIngredients'
+  | 'ingredientsList'
+  | 'directions'
+  | 'warnings'
+  | 'allergen'
+  | 'storage'
+  | 'responsible';
+
+export type Sections = Record<SectionKey, boolean>;
+
 export interface Product {
   id: string;
   category: Category;
@@ -58,6 +70,7 @@ export interface Product {
   containsCaffeine: boolean;
   caffeineMgPerServing: number | '';
   containsSweeteners: boolean;
+  sections?: Partial<Sections>;
   createdAt: number;
   updatedAt: number;
 }

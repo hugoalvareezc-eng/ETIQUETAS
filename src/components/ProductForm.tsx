@@ -1,8 +1,9 @@
-import { DictionaryEntry, Product } from '../types';
+import { DictionaryEntry, Product, SectionKey } from '../types';
 import NutrientTableEditor from './NutrientTableEditor';
 import ActiveIngredientsEditor from './ActiveIngredientsEditor';
 import StringListEditor from './StringListEditor';
 import { lookupTranslation, translateBlock } from '../utils/translate';
+import { getSections, SECTION_LABELS, SECTION_ORDER } from '../utils/sections';
 
 interface Props {
   product: Product;
@@ -13,6 +14,12 @@ interface Props {
 export default function ProductForm({ product, dictionary, onChange }: Props) {
   function patch(p: Partial<Product>) {
     onChange({ ...product, ...p });
+  }
+
+  const sections = getSections(product);
+
+  function toggleSection(key: SectionKey, checked: boolean) {
+    patch({ sections: { ...sections, [key]: checked } });
   }
 
   function translateName() {
@@ -72,6 +79,27 @@ export default function ProductForm({ product, dictionary, onChange }: Props) {
               onChange={(e) => patch({ labelWidthCm: e.target.value === '' ? 0 : Number(e.target.value) })}
             />
           </label>
+        </div>
+      </section>
+
+      <section>
+        <h3>¿Qué incluir en la etiqueta?</h3>
+        <p className="hint">
+          Desmarca lo que no quieras que aparezca impreso (por ejemplo, los sellos de advertencia
+          o el modo de uso). El dato sigue guardado en el formulario, solo se oculta de la
+          etiqueta y se puede volver a activar cuando quieras.
+        </p>
+        <div className="section-toggle-bar">
+          {SECTION_ORDER.map((key) => (
+            <label key={key} className="checkbox-label section-toggle">
+              <input
+                type="checkbox"
+                checked={sections[key]}
+                onChange={(e) => toggleSection(key, e.target.checked)}
+              />
+              {SECTION_LABELS[key]}
+            </label>
+          ))}
         </div>
       </section>
 

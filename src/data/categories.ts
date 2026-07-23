@@ -1,5 +1,6 @@
 import { ActiveIngredient, Category, CategoryInfo, Nutrient, Product } from '../types';
 import { newId } from '../utils/id';
+import { DEFAULT_SECTIONS } from '../utils/sections';
 
 // Ancho sugerido de etiqueta por categoría (cm). Es un punto de partida:
 // el tamaño real depende del bote/bolsa de cada producto y se puede ajustar
@@ -152,6 +153,7 @@ export function createBlankProduct(category: Category): Product {
     containsCaffeine: category === 'preentreno',
     caffeineMgPerServing: '',
     containsSweeteners: false,
+    sections: { ...DEFAULT_SECTIONS },
     createdAt: now,
     updatedAt: now,
   };

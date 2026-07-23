@@ -2,6 +2,7 @@ import { forwardRef } from 'react';
 import { Product } from '../types';
 import { per100g, computeSeals, caffeineLegendTriggered, sweetenerLegendTriggered } from '../data/nom051';
 import { categoryLabel } from '../data/categories';
+import { getSections } from '../utils/sections';
 
 interface Props {
   product: Product;
@@ -20,9 +21,10 @@ function sizeVariant(widthCm: number): 'normal' | 'compact' | 'tiny' {
 }
 
 const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm }, ref) => {
-  const seals = computeSeals(product).filter((s) => s.triggered);
-  const showCaffeine = caffeineLegendTriggered(product);
-  const showSweeteners = sweetenerLegendTriggered(product);
+  const sections = getSections(product);
+  const seals = sections.seals ? computeSeals(product).filter((s) => s.triggered) : [];
+  const showCaffeine = sections.seals && caffeineLegendTriggered(product);
+  const showSweeteners = sections.seals && sweetenerLegendTriggered(product);
   const unitSuffix = product.isLiquid ? 'ml' : 'g';
   const width = widthCm ?? product.labelWidthCm;
 
@@ -93,7 +95,7 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm }, 
         <p className="fine-print">*% Valor Diario con base en una dieta de 2000 kcal.</p>
       </div>
 
-      {product.activeIngredients.some((i) => i.nameEs || i.amount !== '') && (
+      {sections.activeIngredients && product.activeIngredients.some((i) => i.nameEs || i.amount !== '') && (
         <div className="active-ingredients-box">
           <h3>Ingredientes activos</h3>
           <table className="nutrimental-table">
@@ -111,21 +113,21 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm }, 
         </div>
       )}
 
-      {product.ingredientsListEs && (
+      {sections.ingredientsList && product.ingredientsListEs && (
         <div className="text-block">
           <h4>Ingredientes</h4>
           <p>{product.ingredientsListEs}</p>
         </div>
       )}
 
-      {product.directionsEs && (
+      {sections.directions && product.directionsEs && (
         <div className="text-block">
           <h4>Modo de uso</h4>
           <p>{product.directionsEs}</p>
         </div>
       )}
 
-      {product.warningsEs.filter(Boolean).length > 0 && (
+      {sections.warnings && product.warningsEs.filter(Boolean).length > 0 && (
         <div className="text-block">
           <h4>Advertencias</h4>
           <ul>
@@ -136,21 +138,21 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm }, 
         </div>
       )}
 
-      {product.allergenEs && (
+      {sections.allergen && product.allergenEs && (
         <div className="text-block">
           <h4>Alérgenos</h4>
           <p>{product.allergenEs}</p>
         </div>
       )}
 
-      {product.storageEs && (
+      {sections.storage && product.storageEs && (
         <div className="text-block">
           <h4>Conservación</h4>
           <p>{product.storageEs}</p>
         </div>
       )}
 
-      {product.responsibleEs && (
+      {sections.responsible && product.responsibleEs && (
         <div className="text-block">
           <p className="fine-print">{product.responsibleEs}</p>
         </div>
