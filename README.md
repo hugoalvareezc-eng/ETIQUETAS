@@ -48,6 +48,11 @@ para revisar, imprimir o exportar como imagen.
   activa "Acomodar el contenido en 2 columnas" en "Datos generales" para que
   la tabla nutrimental, ingredientes, modo de uso y advertencias se
   distribuyan en dos columnas y la etiqueta salga bastante más baja.
+- **Modo compacto**: si la etiqueta sigue quedando muy alta (por ejemplo, en
+  una etiqueta angosta donde no conviene usar 2 columnas), activa "Modo
+  compacto" en "Datos generales" para reducir espacios y tamaño de letra sin
+  quitar información. Se puede combinar con las 2 columnas para bajar la
+  altura todavía más.
 - **Exportar / importar catálogo (JSON)**: desde "Mis productos" puedes
   descargar todos tus productos en un archivo `.json` (respaldo, o para
   pasarlo a otra computadora), y volver a importarlo con "Importar catálogo".

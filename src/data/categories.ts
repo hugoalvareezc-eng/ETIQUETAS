@@ -142,6 +142,7 @@ export function createBlankProduct(category: Category): Product {
     isLiquid: false,
     labelWidthCm: DEFAULT_LABEL_WIDTH_CM[category],
     twoColumns: false,
+    compact: false,
     nutrients: [...coreNutrients(), ...extraNutrients(category)],
     activeIngredients: defaultActiveIngredients(category),
     ingredientsListEn: '',
@@ -172,5 +173,6 @@ export function normalizeProduct(product: Product): Product {
     ...product,
     labelWidthCm: product.labelWidthCm ?? DEFAULT_LABEL_WIDTH_CM[product.category],
     twoColumns: product.twoColumns ?? false,
+    compact: product.compact ?? false,
   };
 }

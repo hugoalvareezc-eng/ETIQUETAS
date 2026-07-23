@@ -59,6 +59,7 @@ export interface Product {
   isLiquid: boolean;
   labelWidthCm: number;
   twoColumns: boolean;
+  compact: boolean;
   nutrients: Nutrient[];
   activeIngredients: ActiveIngredient[];
   ingredientsListEn: string;

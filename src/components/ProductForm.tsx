@@ -87,6 +87,14 @@ export default function ProductForm({ product, dictionary, onChange }: Props) {
             />
             Acomodar el contenido en 2 columnas (para etiquetas anchas con mucho texto)
           </label>
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={product.compact}
+              onChange={(e) => patch({ compact: e.target.checked })}
+            />
+            Modo compacto (reduce espacios y letra para que la etiqueta salga menos alta)
+          </label>
         </div>
       </section>
 

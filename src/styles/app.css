@@ -429,6 +429,71 @@ textarea {
   font-size: 0.5rem;
 }
 
+.nutrition-label[data-compact='true'] {
+  line-height: 1.15;
+}
+
+.nutrition-label[data-compact='true'] h2 {
+  margin: 0.15rem 0;
+}
+
+.nutrition-label[data-compact='true'] .label-brand {
+  margin-bottom: 0.4rem;
+}
+
+.nutrition-label[data-compact='true'] .seals-row,
+.nutrition-label[data-compact='true'] .legends {
+  margin: 0.35rem 0;
+  gap: 0.3rem;
+}
+
+.nutrition-label[data-compact='true'] .legend {
+  padding: 0.15rem 0.35rem;
+}
+
+.nutrition-label[data-compact='true'] .nutrimental-box,
+.nutrition-label[data-compact='true'] .active-ingredients-box {
+  padding: 0.35rem;
+  margin-bottom: 0.4rem;
+}
+
+.nutrition-label[data-compact='true'] .nutrimental-box h3 {
+  margin: 0 0 0.2rem;
+  font-size: 0.92rem;
+}
+
+.nutrition-label[data-compact='true'] .nutrimental-table th,
+.nutrition-label[data-compact='true'] .nutrimental-table td {
+  padding: 0.08rem 0.25rem;
+}
+
+.nutrition-label[data-compact='true'] .text-block {
+  margin-bottom: 0.35rem;
+}
+
+.nutrition-label[data-compact='true'] .text-block h4 {
+  margin: 0 0 0.1rem;
+}
+
+.nutrition-label[data-compact='true'] .text-block ul {
+  padding-left: 0.9rem;
+}
+
+.nutrition-label[data-compact='true'] .text-block ul li {
+  margin-bottom: 0.05rem;
+}
+
+.nutrition-label[data-compact='true'] .text-block p,
+.nutrition-label[data-compact='true'] .text-block ul,
+.nutrition-label[data-compact='true'] .nutrimental-table,
+.nutrition-label[data-compact='true'] .muted {
+  font-size: 0.76rem;
+}
+
+.nutrition-label[data-compact='true'] .fine-print {
+  margin-top: 0.2rem;
+}
+
 .nutrition-label h2 {
   margin: 0.3rem 0;
 }

@@ -221,6 +221,7 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm }, 
     <div
       className="nutrition-label"
       data-size={sizeVariant(width)}
+      data-compact={product.compact ? 'true' : undefined}
       style={{ width: `${width}cm` }}
       ref={ref}
     >
