@@ -45,6 +45,7 @@ export interface Product {
   servingSizeGrams: number | '';
   servingsPerContainer: number | '';
   isLiquid: boolean;
+  labelWidthCm: number;
   nutrients: Nutrient[];
   activeIngredients: ActiveIngredient[];
   ingredientsListEn: string;

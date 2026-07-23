@@ -5,6 +5,7 @@ import { categoryLabel } from '../data/categories';
 
 interface Props {
   product: Product;
+  widthCm?: number;
 }
 
 function fmt(n: number): string {
@@ -12,14 +13,26 @@ function fmt(n: number): string {
   return Number(n.toFixed(2)).toString();
 }
 
-const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product }, ref) => {
+function sizeVariant(widthCm: number): 'normal' | 'compact' | 'tiny' {
+  if (widthCm < 5.5) return 'tiny';
+  if (widthCm < 6.5) return 'compact';
+  return 'normal';
+}
+
+const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm }, ref) => {
   const seals = computeSeals(product).filter((s) => s.triggered);
   const showCaffeine = caffeineLegendTriggered(product);
   const showSweeteners = sweetenerLegendTriggered(product);
   const unitSuffix = product.isLiquid ? 'ml' : 'g';
+  const width = widthCm ?? product.labelWidthCm;
 
   return (
-    <div className="nutrition-label" ref={ref}>
+    <div
+      className="nutrition-label"
+      data-size={sizeVariant(width)}
+      style={{ width: `${width}cm` }}
+      ref={ref}
+    >
       <div className="label-brand">
         <span className="badge">{categoryLabel(product.category)}</span>
         <h2>{product.productNameEs || 'Nombre del producto'}</h2>

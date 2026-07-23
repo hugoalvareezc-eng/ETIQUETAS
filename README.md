@@ -38,6 +38,13 @@ para revisar, imprimir o exportar como imagen.
 - **Imprime o exporta la etiqueta** como PNG para pegarla en tus etiquetas
   físicas, o usa "Imprimir / Guardar PDF" para generar un PDF con el
   diálogo de impresión del navegador.
+- **Hoja de impresión con varias etiquetas** (pestaña "Imprimir hoja"):
+  elige cuántas copias de cada producto necesitas y la app las acomoda solas
+  en hojas tamaño Carta o A4 para aprovechar el papel, respetando el ancho de
+  etiqueta configurado por producto (una proteína grande no ocupa lo mismo
+  que un pre-entreno chico). Si el contenido de una etiqueta es más alto que
+  el espacio disponible en la hoja, te avisa para que agrandes el ancho de
+  esa etiqueta o la imprimas aparte.
 
 ## Cómo correrlo
 

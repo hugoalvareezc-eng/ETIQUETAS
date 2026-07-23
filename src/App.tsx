@@ -6,9 +6,10 @@ import ProductList from './components/ProductList';
 import CategoryPicker from './components/CategoryPicker';
 import ProductEditor from './components/ProductEditor';
 import DictionaryBrowser from './components/DictionaryBrowser';
+import PrintSheetView from './components/PrintSheetView';
 import { newId } from './utils/id';
 
-type View = 'list' | 'editor' | 'dictionary';
+type View = 'list' | 'editor' | 'dictionary' | 'sheet';
 
 export default function App() {
   const [products, setProducts] = useLocalStorage<Product[]>('reetiquetado_products', []);
@@ -76,6 +77,9 @@ export default function App() {
           <button className={view === 'list' ? 'active' : ''} onClick={() => setView('list')}>
             Mis productos
           </button>
+          <button className={view === 'sheet' ? 'active' : ''} onClick={() => setView('sheet')}>
+            Imprimir hoja
+          </button>
           <button className={view === 'dictionary' ? 'active' : ''} onClick={() => setView('dictionary')}>
             Diccionario
           </button>
@@ -105,6 +109,8 @@ export default function App() {
             onAddDictionaryEntry={addCustomDictionaryEntry}
           />
         )}
+
+        {view === 'sheet' && <PrintSheetView products={products} />}
 
         {view === 'dictionary' && (
           <DictionaryBrowser

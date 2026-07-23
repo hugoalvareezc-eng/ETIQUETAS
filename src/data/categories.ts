@@ -1,6 +1,19 @@
 import { ActiveIngredient, Category, CategoryInfo, Nutrient, Product } from '../types';
 import { newId } from '../utils/id';
 
+// Ancho sugerido de etiqueta por categoría (cm). Es un punto de partida:
+// el tamaño real depende del bote/bolsa de cada producto y se puede ajustar
+// por producto en el formulario. El alto de la etiqueta no se fija: se
+// calcula solo según cuánto texto tenga cada etiqueta.
+export const DEFAULT_LABEL_WIDTH_CM: Record<Category, number> = {
+  proteina: 9,
+  preentreno: 6,
+  creatina: 6,
+  aminoacidos: 7,
+  vitaminas: 5,
+  generico: 7,
+};
+
 export const CATEGORIES: CategoryInfo[] = [
   { id: 'proteina', label: 'Proteína', description: 'Whey, isolate, caseína, vegana, etc.' },
   { id: 'preentreno', label: 'Pre-entreno', description: 'Pre-workout / "prees"' },
@@ -126,6 +139,7 @@ export function createBlankProduct(category: Category): Product {
     servingSizeGrams: '',
     servingsPerContainer: '',
     isLiquid: false,
+    labelWidthCm: DEFAULT_LABEL_WIDTH_CM[category],
     nutrients: [...coreNutrients(), ...extraNutrients(category)],
     activeIngredients: defaultActiveIngredients(category),
     ingredientsListEn: '',

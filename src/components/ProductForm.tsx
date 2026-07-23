@@ -62,6 +62,16 @@ export default function ProductForm({ product, dictionary, onChange }: Props) {
             />
             Es un producto líquido (bebida, shot, etc.)
           </label>
+          <label>
+            Ancho de la etiqueta (cm) — según el tamaño real del bote/bolsa
+            <input
+              type="number"
+              step="0.5"
+              min="2"
+              value={product.labelWidthCm}
+              onChange={(e) => patch({ labelWidthCm: e.target.value === '' ? 0 : Number(e.target.value) })}
+            />
+          </label>
         </div>
       </section>
 
