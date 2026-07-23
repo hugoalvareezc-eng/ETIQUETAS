@@ -56,11 +56,6 @@ para revisar, imprimir o exportar como imagen.
   varios productos): solo necesita traer los campos que de verdad importan
   (nombre, marca, tabla nutrimental, ingredientes, etc.) — lo demás se
   completa solo con la plantilla de esa categoría.
-- **Denominación del producto** (qué tipo de producto es, en español —
-  ej. "Proteína en polvo", "Suplemento alimenticio en polvo (pre-entreno)")
-  para que el panel frontal del empaque también quede en español, no solo la
-  tabla nutrimental. Cada categoría trae un texto por defecto que puedes
-  editar por producto.
 - **Buscador y filtro por categoría** en "Mis productos" y en "Imprimir hoja",
   para encontrar rápido un producto por nombre, marca o sabor cuando el
   catálogo crece.

@@ -437,11 +437,6 @@ textarea {
   margin-bottom: 0.75rem;
 }
 
-.denominacion {
-  font-weight: 600;
-  margin: 0.1rem 0 0.3rem;
-}
-
 .seals-row {
   display: flex;
   gap: 0.5rem;

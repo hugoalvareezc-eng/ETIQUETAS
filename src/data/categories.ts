@@ -15,18 +15,6 @@ export const DEFAULT_LABEL_WIDTH_CM: Record<Category, number> = {
   generico: 7,
 };
 
-// Denominación genérica del producto (lo que la NOM-051 pide declarar en el
-// panel frontal: qué tipo de producto es, en español), por categoría.
-// Editable por producto en el formulario.
-export const DEFAULT_DENOMINACION: Record<Category, string> = {
-  proteina: 'Proteína en polvo',
-  preentreno: 'Suplemento alimenticio en polvo (pre-entreno)',
-  creatina: 'Suplemento alimenticio en polvo (creatina)',
-  aminoacidos: 'Suplemento alimenticio en polvo (aminoácidos)',
-  vitaminas: 'Suplemento alimenticio (vitaminas y minerales)',
-  generico: 'Suplemento alimenticio',
-};
-
 export const CATEGORIES: CategoryInfo[] = [
   { id: 'proteina', label: 'Proteína', description: 'Whey, isolate, caseína, vegana, etc.' },
   { id: 'preentreno', label: 'Pre-entreno', description: 'Pre-workout / "prees"' },
@@ -146,7 +134,6 @@ export function createBlankProduct(category: Category): Product {
     brand: '',
     productNameEn: '',
     productNameEs: '',
-    denominacionEs: DEFAULT_DENOMINACION[category],
     flavor: '',
     netContent: '',
     servingSizeText: '',
@@ -185,6 +172,5 @@ export function normalizeProduct(product: Product): Product {
     ...product,
     labelWidthCm: product.labelWidthCm ?? DEFAULT_LABEL_WIDTH_CM[product.category],
     twoColumns: product.twoColumns ?? false,
-    denominacionEs: product.denominacionEs ?? DEFAULT_DENOMINACION[product.category],
   };
 }
