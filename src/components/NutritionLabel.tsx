@@ -307,14 +307,16 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
         else if (ref) (ref as MutableRefObject<HTMLDivElement | null>).current = el;
       }}
     >
-      <div className="label-brand">
-        <span className="badge">{categoryLabel(product.category)}</span>
-        <h2>{product.productNameEs || 'Nombre del producto'}</h2>
-        <p className="muted">
-          {product.brand} {product.flavor && `· Sabor: ${product.flavor}`}
-          {product.netContent && ` · Contenido neto: ${product.netContent}`}
-        </p>
-      </div>
+      {sections.header && (
+        <div className="label-brand">
+          <span className="badge">{categoryLabel(product.category)}</span>
+          <h2>{product.productNameEs || 'Nombre del producto'}</h2>
+          <p className="muted">
+            {product.brand} {product.flavor && `· Sabor: ${product.flavor}`}
+            {product.netContent && ` · Contenido neto: ${product.netContent}`}
+          </p>
+        </div>
+      )}
 
       {seals.length > 0 && (
         <div className="seals-row">

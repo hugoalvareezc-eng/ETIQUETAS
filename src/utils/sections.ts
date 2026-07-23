@@ -1,6 +1,7 @@
 import { Product, SectionKey, Sections } from '../types';
 
 export const DEFAULT_SECTIONS: Sections = {
+  header: true,
   seals: true,
   activeIngredients: true,
   ingredientsList: true,
@@ -12,6 +13,7 @@ export const DEFAULT_SECTIONS: Sections = {
 };
 
 export const SECTION_LABELS: Record<SectionKey, string> = {
+  header: 'Encabezado (categoría, nombre, marca, sabor, contenido)',
   seals: 'Sellos de advertencia',
   activeIngredients: 'Ingredientes activos',
   ingredientsList: 'Lista de ingredientes',
@@ -23,6 +25,7 @@ export const SECTION_LABELS: Record<SectionKey, string> = {
 };
 
 export const SECTION_ORDER: SectionKey[] = [
+  'header',
   'seals',
   'activeIngredients',
   'ingredientsList',

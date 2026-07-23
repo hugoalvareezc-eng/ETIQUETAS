@@ -34,6 +34,7 @@ export interface ActiveIngredient {
 }
 
 export type SectionKey =
+  | 'header'
   | 'seals'
   | 'activeIngredients'
   | 'ingredientsList'

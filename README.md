@@ -42,8 +42,10 @@ para revisar, imprimir o exportar como imagen.
   para no desperdiciar una hoja completa en blanco imprimiendo una sola
   etiqueta chica.
 - **Secciones opcionales**: en "¿Qué incluir en la etiqueta?" puedes
-  desmarcar lo que no quieras imprimir (sellos de advertencia, modo de uso,
-  advertencias, ingredientes activos, alérgenos, conservación, etc.). El
+  desmarcar lo que no quieras imprimir (encabezado con categoría/nombre/
+  marca/sabor/contenido, sellos de advertencia, modo de uso, advertencias,
+  ingredientes activos, alérgenos, conservación, etc. — útil si esa
+  etiqueta va pegada donde el nombre/marca ya se ve en otro lado). El
   dato sigue guardado, solo se oculta de la vista previa/impresión, así que
   lo puedes reactivar cuando quieras sin volver a capturarlo.
 - **Etiqueta en 2 columnas**: si el ancho de la etiqueta es amplio (por
