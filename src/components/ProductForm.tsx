@@ -273,6 +273,10 @@ export default function ProductForm({ product, dictionary, onChange }: Props) {
             Responsable / distribuido por (razón social, dirección)
             <input value={product.responsibleEs} onChange={(e) => patch({ responsibleEs: e.target.value })} />
           </label>
+          <label>
+            Importado y distribuido por (razón social, dirección)
+            <input value={product.importedByEs} onChange={(e) => patch({ importedByEs: e.target.value })} />
+          </label>
         </div>
       </section>
     </div>

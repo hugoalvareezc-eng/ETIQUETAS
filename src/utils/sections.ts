@@ -10,6 +10,7 @@ export const DEFAULT_SECTIONS: Sections = {
   allergen: true,
   storage: true,
   responsible: true,
+  importedBy: true,
 };
 
 export const SECTION_LABELS: Record<SectionKey, string> = {
@@ -22,6 +23,7 @@ export const SECTION_LABELS: Record<SectionKey, string> = {
   allergen: 'Alérgenos',
   storage: 'Conservación',
   responsible: 'Responsable / distribuido por',
+  importedBy: 'Importado y distribuido por',
 };
 
 export const SECTION_ORDER: SectionKey[] = [
@@ -34,6 +36,7 @@ export const SECTION_ORDER: SectionKey[] = [
   'allergen',
   'storage',
   'responsible',
+  'importedBy',
 ];
 
 // Los productos guardados antes de que existieran estas opciones no tienen

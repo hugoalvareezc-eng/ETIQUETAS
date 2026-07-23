@@ -179,6 +179,17 @@ function buildBlocks(product: Product, sections: ReturnType<typeof getSections>,
     });
   }
 
+  if (sections.importedBy && product.importedByEs) {
+    blocks.push({
+      key: 'importedBy',
+      node: (
+        <div className="text-block">
+          <p className="fine-print">{product.importedByEs}</p>
+        </div>
+      ),
+    });
+  }
+
   return blocks;
 }
 

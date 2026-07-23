@@ -153,6 +153,7 @@ export function createBlankProduct(category: Category): Product {
     allergenEs: '',
     storageEs: 'Almacenar en un lugar fresco y seco, fuera de la luz solar directa. Cerrar bien después de cada uso.',
     responsibleEs: '',
+    importedByEs: '',
     containsCaffeine: category === 'preentreno',
     caffeineMgPerServing: '',
     containsSweeteners: false,
@@ -176,5 +177,6 @@ export function normalizeProduct(product: Product): Product {
     labelHeightCm: product.labelHeightCm ?? '',
     twoColumns: product.twoColumns ?? false,
     compact: product.compact ?? false,
+    importedByEs: product.importedByEs ?? '',
   };
 }

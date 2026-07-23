@@ -42,7 +42,8 @@ export type SectionKey =
   | 'warnings'
   | 'allergen'
   | 'storage'
-  | 'responsible';
+  | 'responsible'
+  | 'importedBy';
 
 export type Sections = Record<SectionKey, boolean>;
 
@@ -71,6 +72,7 @@ export interface Product {
   allergenEs: string;
   storageEs: string;
   responsibleEs: string;
+  importedByEs: string;
   containsCaffeine: boolean;
   caffeineMgPerServing: number | '';
   containsSweeteners: boolean;
