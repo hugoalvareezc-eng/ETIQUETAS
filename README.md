@@ -48,6 +48,14 @@ para revisar, imprimir o exportar como imagen.
   activa "Acomodar el contenido en 2 columnas" en "Datos generales" para que
   la tabla nutrimental, ingredientes, modo de uso y advertencias se
   distribuyan en dos columnas y la etiqueta salga bastante más baja.
+- **Exportar / importar catálogo (JSON)**: desde "Mis productos" puedes
+  descargar todos tus productos en un archivo `.json` (respaldo, o para
+  pasarlo a otra computadora), y volver a importarlo con "Importar catálogo".
+  También sirve para cargar de golpe una lista de productos que te haya
+  armado alguien más (por ejemplo, un archivo con la info ya investigada de
+  varios productos): solo necesita traer los campos que de verdad importan
+  (nombre, marca, tabla nutrimental, ingredientes, etc.) — lo demás se
+  completa solo con la plantilla de esa categoría.
 - **Hoja de impresión con varias etiquetas** (pestaña "Imprimir hoja"):
   elige cuántas copias de cada producto necesitas y la app las acomoda solas
   en hojas tamaño Carta o A4 para aprovechar el papel, respetando el ancho de
@@ -85,6 +93,44 @@ navegador, no vas a ver los productos guardados anteriormente. Si más
 adelante quieres que varias personas del negocio compartan el mismo catálogo
 de productos desde distintos dispositivos, se puede agregar un backend, pero
 eso queda fuera de esta primera versión.
+
+## Formato del JSON para importar productos
+
+Un archivo para importar es una lista de objetos. Todos los campos son
+opcionales excepto `category` (`proteina` | `preentreno` | `creatina` |
+`aminoacidos` | `vitaminas` | `generico`); lo que no incluyas se completa
+con la plantilla de esa categoría:
+
+```json
+[
+  {
+    "category": "preentreno",
+    "brand": "MarcaX",
+    "productNameEn": "Pre-Workout Extreme",
+    "productNameEs": "Pre-Entreno Extremo",
+    "flavor": "Sandía",
+    "netContent": "300 g",
+    "servingSizeText": "1 scoop (10 g)",
+    "servingSizeGrams": 10,
+    "servingsPerContainer": 30,
+    "nutrients": [
+      { "labelEs": "Contenido energético", "unit": "kcal", "amount": 15 },
+      { "labelEs": "Sodio", "unit": "mg", "amount": 120 }
+    ],
+    "activeIngredients": [
+      { "nameEn": "Caffeine Anhydrous", "nameEs": "Cafeína anhidra", "amount": 200, "unit": "mg" }
+    ],
+    "containsCaffeine": true,
+    "caffeineMgPerServing": 200,
+    "ingredientsListEs": "Cafeína anhidra, beta-alanina, ácido cítrico, sucralosa."
+  }
+]
+```
+
+`nutrients` solo necesita traer los renglones que quieras llenar (por
+`labelEs` o `labelEn`); el resto de la tabla obligatoria de la NOM-051 se
+completa vacía y cualquier renglón que no coincida con la plantilla se
+agrega al final (útil para vitaminas/minerales extra).
 
 ## Fuentes usadas para los umbrales de sellos (NOM-051)
 

@@ -62,6 +62,10 @@ export default function App() {
     setProducts((prev) => [copy, ...prev]);
   }
 
+  function handleImport(imported: Product[]) {
+    setProducts((prev) => [...imported, ...prev]);
+  }
+
   function addCustomDictionaryEntry(entry: DictionaryEntry) {
     setCustomDictionary((prev) => [entry, ...prev]);
   }
@@ -98,6 +102,7 @@ export default function App() {
             onNew={() => setShowPicker(true)}
             onDelete={handleDelete}
             onDuplicate={handleDuplicate}
+            onImport={handleImport}
           />
         )}
 

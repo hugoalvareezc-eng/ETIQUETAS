@@ -110,6 +110,17 @@ button {
 
 .product-list-toolbar {
   margin-bottom: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.product-list-toolbar button:not(.primary-btn) {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
 }
 
 .product-grid {
