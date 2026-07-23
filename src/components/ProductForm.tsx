@@ -79,6 +79,14 @@ export default function ProductForm({ product, dictionary, onChange }: Props) {
               onChange={(e) => patch({ labelWidthCm: e.target.value === '' ? 0 : Number(e.target.value) })}
             />
           </label>
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={product.twoColumns}
+              onChange={(e) => patch({ twoColumns: e.target.checked })}
+            />
+            Acomodar el contenido en 2 columnas (para etiquetas anchas con mucho texto)
+          </label>
         </div>
       </section>
 

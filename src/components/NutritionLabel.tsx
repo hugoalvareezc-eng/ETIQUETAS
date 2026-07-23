@@ -61,6 +61,7 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm }, 
         </div>
       )}
 
+      <div className={product.twoColumns ? 'label-body label-body-columns' : 'label-body'}>
       <div className="nutrimental-box">
         <h3>INFORMACIÓN NUTRIMENTAL</h3>
         <p>
@@ -157,6 +158,7 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm }, 
           <p className="fine-print">{product.responsibleEs}</p>
         </div>
       )}
+      </div>
     </div>
   );
 });

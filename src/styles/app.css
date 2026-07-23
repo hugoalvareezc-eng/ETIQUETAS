@@ -450,11 +450,24 @@ textarea {
   display: inline-block;
 }
 
+.label-body-columns {
+  column-count: 2;
+  column-gap: 0.9rem;
+}
+
+.label-body-columns .nutrimental-box,
+.label-body-columns .active-ingredients-box,
+.label-body-columns .text-block {
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+}
+
 .nutrimental-box,
 .active-ingredients-box {
   border: 2px solid #000;
   padding: 0.6rem;
   margin-bottom: 0.9rem;
+  break-inside: avoid;
 }
 
 .nutrimental-box h3 {

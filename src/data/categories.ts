@@ -141,6 +141,7 @@ export function createBlankProduct(category: Category): Product {
     servingsPerContainer: '',
     isLiquid: false,
     labelWidthCm: DEFAULT_LABEL_WIDTH_CM[category],
+    twoColumns: false,
     nutrients: [...coreNutrients(), ...extraNutrients(category)],
     activeIngredients: defaultActiveIngredients(category),
     ingredientsListEn: '',
@@ -161,4 +162,15 @@ export function createBlankProduct(category: Category): Product {
 
 export function categoryLabel(id: Category): string {
   return CATEGORIES.find((c) => c.id === id)?.label ?? id;
+}
+
+// Rellena campos que no existían en versiones anteriores de la app para
+// productos que ya estaban guardados en el navegador, para que no se rompan
+// al agregar opciones nuevas (ancho de etiqueta, columnas, secciones, etc.).
+export function normalizeProduct(product: Product): Product {
+  return {
+    ...product,
+    labelWidthCm: product.labelWidthCm ?? DEFAULT_LABEL_WIDTH_CM[product.category],
+    twoColumns: product.twoColumns ?? false,
+  };
 }

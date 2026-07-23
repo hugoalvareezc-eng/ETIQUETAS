@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Product, Category, DictionaryEntry } from './types';
-import { createBlankProduct } from './data/categories';
+import { createBlankProduct, normalizeProduct } from './data/categories';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import ProductList from './components/ProductList';
 import CategoryPicker from './components/CategoryPicker';
@@ -12,7 +12,8 @@ import { newId } from './utils/id';
 type View = 'list' | 'editor' | 'dictionary' | 'sheet';
 
 export default function App() {
-  const [products, setProducts] = useLocalStorage<Product[]>('reetiquetado_products', []);
+  const [rawProducts, setProducts] = useLocalStorage<Product[]>('reetiquetado_products', []);
+  const products = useMemo(() => rawProducts.map(normalizeProduct), [rawProducts]);
   const [customDictionary, setCustomDictionary] = useLocalStorage<DictionaryEntry[]>(
     'reetiquetado_dictionary_custom',
     [],

@@ -43,6 +43,11 @@ para revisar, imprimir o exportar como imagen.
   advertencias, ingredientes activos, alérgenos, conservación, etc.). El
   dato sigue guardado, solo se oculta de la vista previa/impresión, así que
   lo puedes reactivar cuando quieras sin volver a capturarlo.
+- **Etiqueta en 2 columnas**: si el ancho de la etiqueta es amplio (por
+  ejemplo, un bote grande de proteína) pero el contenido queda muy largo/alto,
+  activa "Acomodar el contenido en 2 columnas" en "Datos generales" para que
+  la tabla nutrimental, ingredientes, modo de uso y advertencias se
+  distribuyan en dos columnas y la etiqueta salga bastante más baja.
 - **Hoja de impresión con varias etiquetas** (pestaña "Imprimir hoja"):
   elige cuántas copias de cada producto necesitas y la app las acomoda solas
   en hojas tamaño Carta o A4 para aprovechar el papel, respetando el ancho de
