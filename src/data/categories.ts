@@ -141,6 +141,7 @@ export function createBlankProduct(category: Category): Product {
     servingsPerContainer: '',
     isLiquid: false,
     labelWidthCm: DEFAULT_LABEL_WIDTH_CM[category],
+    labelHeightCm: '',
     twoColumns: false,
     compact: false,
     nutrients: [...coreNutrients(), ...extraNutrients(category)],
@@ -172,6 +173,7 @@ export function normalizeProduct(product: Product): Product {
   return {
     ...product,
     labelWidthCm: product.labelWidthCm ?? DEFAULT_LABEL_WIDTH_CM[product.category],
+    labelHeightCm: product.labelHeightCm ?? '',
     twoColumns: product.twoColumns ?? false,
     compact: product.compact ?? false,
   };

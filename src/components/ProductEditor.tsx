@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { toPng } from 'html-to-image';
 import { DictionaryEntry, Product } from '../types';
 import ProductForm from './ProductForm';
@@ -16,6 +16,7 @@ interface Props {
 export default function ProductEditor({ product, customDictionary, onChange, onBack }: Props) {
   const labelRef = useRef<HTMLDivElement>(null);
   const dictionary = useMemo(() => [...customDictionary, ...BASE_DICTIONARY], [customDictionary]);
+  const [heightOverflow, setHeightOverflow] = useState(false);
 
   async function exportPng() {
     if (!labelRef.current) return;
@@ -55,8 +56,15 @@ export default function ProductEditor({ product, customDictionary, onChange, onB
               <strong> estimación</strong> basada en la NOM-051 — verifica con tu proveedor de
               etiquetado antes de imprimir en producción.
             </p>
+            {heightOverflow && (
+              <div className="warning-banner no-print">
+                <strong>⚠ El contenido no cabe en el alto fijo que pusiste</strong>, aunque ya se
+                encogió la letra al mínimo legible. Prueba agrandando el alto, quitando alguna
+                sección opcional, o dejando el alto en automático.
+              </div>
+            )}
             <div className="print-area">
-              <NutritionLabel product={product} ref={labelRef} />
+              <NutritionLabel product={product} ref={labelRef} onOverflowChange={setHeightOverflow} />
             </div>
           </div>
         </div>

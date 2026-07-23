@@ -1,14 +1,20 @@
-import { forwardRef, ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { forwardRef, MutableRefObject, ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Product } from '../types';
 import { per100g, computeSeals, caffeineLegendTriggered, sweetenerLegendTriggered } from '../data/nom051';
 import { categoryLabel } from '../data/categories';
 import { getSections } from '../utils/sections';
 import { balanceColumns, ColumnSplit } from '../utils/balanceColumns';
+import { pxToCm } from '../utils/units';
 
 interface Props {
   product: Product;
   widthCm?: number;
+  onOverflowChange?: (overflowing: boolean) => void;
 }
+
+// Alto mínimo al que se permite encoger la letra para que el contenido quepa
+// en un alto fijo, antes de simplemente avisar que ya no cabe.
+const MIN_HEIGHT_FIT_SCALE = 0.6;
 
 interface Block {
   key: string;
@@ -176,7 +182,7 @@ function buildBlocks(product: Product, sections: ReturnType<typeof getSections>,
   return blocks;
 }
 
-const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm }, ref) => {
+const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, onOverflowChange }, ref) => {
   const sections = getSections(product);
   const seals = sections.seals ? computeSeals(product).filter((s) => s.triggered) : [];
   const showCaffeine = sections.seals && caffeineLegendTriggered(product);
@@ -184,7 +190,7 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm }, 
   const unitSuffix = product.isLiquid ? 'ml' : 'g';
   const width = widthCm ?? product.labelWidthCm;
   const columnWidth = product.twoColumns ? (width - COLUMN_GAP_CM) / 2 : width;
-  const fontSizeRem = 0.9 * widthScale(width) * (product.compact ? 0.85 : 1);
+  const baseFontSizeRem = 0.9 * widthScale(width) * (product.compact ? 0.85 : 1);
 
   const blocks = useMemo(
     () => buildBlocks(product, sections, unitSuffix),
@@ -207,6 +213,55 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm }, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product.twoColumns, blocksKey, columnWidth]);
 
+  // Si se fijó un alto de etiqueta, encoge la letra lo necesario para que el
+  // contenido quepa dentro de ese alto (con un piso mínimo de legibilidad).
+  // Si ni así cabe, se avisa hacia afuera con onOverflowChange en vez de
+  // dejar que el contenido se desborde silenciosamente.
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const [heightFitScale, setHeightFitScale] = useState(1);
+  const [heightOverflow, setHeightOverflow] = useState(false);
+  const fitSignature = `${product.labelHeightCm}|${blocksKey}|${width}|${product.compact}|${product.twoColumns}|${split ? 'split' : 'nosplit'}`;
+  const lastFitSignature = useRef<string | null>(null);
+
+  useLayoutEffect(() => {
+    if (!product.labelHeightCm) {
+      if (heightFitScale !== 1) setHeightFitScale(1);
+      if (heightOverflow) setHeightOverflow(false);
+      lastFitSignature.current = fitSignature;
+      return;
+    }
+    if (lastFitSignature.current !== fitSignature) {
+      lastFitSignature.current = fitSignature;
+      if (heightFitScale !== 1) {
+        setHeightFitScale(1);
+        return; // se vuelve a medir en el siguiente pase, ya a escala 1
+      }
+    }
+    const el = rootRef.current;
+    if (!el) return;
+    // scrollHeight (no offsetHeight) porque el propio div ya trae
+    // "overflow: hidden" + alto fijo por CSS; offsetHeight reportaría el
+    // alto ya recortado en vez del alto real que pide el contenido.
+    const naturalCm = pxToCm(el.scrollHeight);
+    const targetCm = product.labelHeightCm as number;
+    if (naturalCm > targetCm + 0.02) {
+      const needed = Math.max(MIN_HEIGHT_FIT_SCALE, targetCm / naturalCm);
+      if (Math.abs(needed - heightFitScale) > 0.01) {
+        setHeightFitScale(needed);
+      }
+      setHeightOverflow(needed <= MIN_HEIGHT_FIT_SCALE + 0.001);
+    } else {
+      setHeightOverflow(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fitSignature, heightFitScale]);
+
+  useEffect(() => {
+    onOverflowChange?.(heightOverflow);
+  }, [heightOverflow, onOverflowChange]);
+
+  const fontSizeRem = baseFontSizeRem * heightFitScale;
+
   const showBalanced = product.twoColumns && split;
   const blockMap = new Map(blocks.map((b) => [b.key, b]));
 
@@ -227,8 +282,18 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm }, 
     <div
       className="nutrition-label"
       data-compact={product.compact ? 'true' : undefined}
-      style={{ width: `${width}cm`, fontSize: `${fontSizeRem.toFixed(3)}rem` }}
-      ref={ref}
+      style={{
+        width: `${width}cm`,
+        fontSize: `${fontSizeRem.toFixed(3)}rem`,
+        ...(product.labelHeightCm
+          ? { height: `${product.labelHeightCm}cm`, overflow: 'hidden' }
+          : null),
+      }}
+      ref={(el) => {
+        rootRef.current = el;
+        if (typeof ref === 'function') ref(el);
+        else if (ref) (ref as MutableRefObject<HTMLDivElement | null>).current = el;
+      }}
     >
       <div className="label-brand">
         <span className="badge">{categoryLabel(product.category)}</span>

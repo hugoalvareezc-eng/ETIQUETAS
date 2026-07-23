@@ -79,6 +79,19 @@ export default function ProductForm({ product, dictionary, onChange }: Props) {
               onChange={(e) => patch({ labelWidthCm: e.target.value === '' ? 0 : Number(e.target.value) })}
             />
           </label>
+          <label>
+            Alto fijo de la etiqueta (cm) — opcional, déjalo vacío para que se ajuste solo
+            <input
+              type="number"
+              step="0.5"
+              min="1"
+              value={product.labelHeightCm}
+              onChange={(e) =>
+                patch({ labelHeightCm: e.target.value === '' ? '' : Number(e.target.value) })
+              }
+              placeholder="Automático"
+            />
+          </label>
           <label className="checkbox-label">
             <input
               type="checkbox"

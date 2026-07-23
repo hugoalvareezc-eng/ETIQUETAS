@@ -58,6 +58,7 @@ export interface Product {
   servingsPerContainer: number | '';
   isLiquid: boolean;
   labelWidthCm: number;
+  labelHeightCm: number | '';
   twoColumns: boolean;
   compact: boolean;
   nutrients: Nutrient[];

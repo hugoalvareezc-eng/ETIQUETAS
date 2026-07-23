@@ -57,6 +57,12 @@ para revisar, imprimir o exportar como imagen.
   espacios internos se van achicando en proporción real al ancho de la
   etiqueta (no en saltos fijos), así que una etiqueta muy angosta (2-3 cm)
   se ve chica pero ordenada, en vez de amontonarse o desbordar el borde.
+- **Alto fijo de etiqueta** (opcional): si tu papel/etiqueta pre-cortada
+  tiene un tamaño exacto, captura "Alto fijo de la etiqueta (cm)" en Datos
+  generales. La app encoge la letra lo necesario para que quepa en ese alto;
+  si ni así alcanza, te avisa en vez de recortar el contenido en silencio,
+  para que agrandes el alto, quites alguna sección opcional, o lo dejes en
+  automático.
 - **Exportar / importar catálogo (JSON)**: desde "Mis productos" puedes
   descargar todos tus productos en un archivo `.json` (respaldo, o para
   pasarlo a otra computadora), y volver a importarlo con "Importar catálogo".
