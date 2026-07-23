@@ -53,11 +53,13 @@ para revisar, imprimir o exportar como imagen.
   activa "Acomodar el contenido en 2 columnas" en "Datos generales" para que
   la tabla nutrimental, ingredientes, modo de uso y advertencias se
   distribuyan en dos columnas y la etiqueta salga bastante más baja. La app
-  intenta que ambas columnas queden parejas en altura repartiendo los demás
-  bloques (ingredientes, modo de uso, advertencias, etc.); la tabla
-  nutrimental siempre se muestra completa y sin partir en una sola columna,
-  así que si ella sola es más alta que el resto del contenido junto, puede
-  quedar algo de espacio libre del otro lado.
+  reparte primero los demás bloques (ingredientes, modo de uso, advertencias,
+  etc.) buscando que ambas columnas queden lo más parejas posible; la tabla
+  nutrimental siempre se muestra completa y sin partir en una sola columna.
+  Si esa columna corta le sobra espacio (porque la tabla nutrimental por sí
+  sola es más alta que el resto del contenido junto), sus bloques se
+  reparten a lo largo de toda la columna en vez de amontonarse arriba y
+  dejar todo el espacio libre junto abajo.
 - **Modo compacto**: si la etiqueta sigue quedando muy alta (por ejemplo, en
   una etiqueta angosta donde no conviene usar 2 columnas), activa "Modo
   compacto" en "Datos generales" para reducir espacios y tamaño de letra sin

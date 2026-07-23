@@ -525,11 +525,14 @@ textarea {
 
 .label-body-balanced {
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
 }
 
 .label-column {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .nutrimental-box,
