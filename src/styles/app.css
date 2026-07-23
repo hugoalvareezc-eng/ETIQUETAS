@@ -450,16 +450,13 @@ textarea {
   display: inline-block;
 }
 
-.label-body-columns {
-  column-count: 2;
-  column-gap: 0.9rem;
+.label-body-balanced {
+  display: flex;
+  align-items: flex-start;
 }
 
-.label-body-columns .nutrimental-box,
-.label-body-columns .active-ingredients-box,
-.label-body-columns .text-block {
-  break-inside: avoid;
-  -webkit-column-break-inside: avoid;
+.label-column {
+  min-width: 0;
 }
 
 .nutrimental-box,
