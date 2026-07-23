@@ -39,92 +39,47 @@ function widthScale(widthCm: number): number {
   return Math.max(MIN_WIDTH_SCALE, Math.min(1, raw));
 }
 
-// Arriba de este número de renglones, en modo 2 columnas la tabla nutrimental
-// se parte en dos (como en muchas etiquetas reales de bote ancho) para que no
-// sea un solo bloque gigante que ninguna combinación del resto del contenido
-// pueda contrapesar, dejando espacio en blanco del lado corto sin remedio.
-const NUTRIMENTAL_SPLIT_THRESHOLD = 10;
-
-function buildNutrimentalBlocks(product: Product, unitSuffix: string): Block[] {
-  const hasDV = product.nutrients.some((n) => n.dailyValuePercent !== '' && n.dailyValuePercent !== undefined);
-  const headerRow = (
-    <tr>
-      <th>Nutrimento</th>
-      <th>Por 100 {unitSuffix}</th>
-      <th>Por porción</th>
-      {hasDV && <th>% VD*</th>}
-    </tr>
-  );
-  const rows = product.nutrients.map((n) => (
-    <tr key={n.id} className={n.indent ? 'indent' : ''}>
-      <td>{n.labelEs || n.labelEn || '—'}</td>
-      <td>{n.amount === '' ? '—' : `${fmt(per100g(product, n))} ${n.unit}`}</td>
-      <td>{n.amount === '' ? '—' : `${fmt(n.amount)} ${n.unit}`}</td>
-      {hasDV && <td>{n.dailyValuePercent === '' || n.dailyValuePercent === undefined ? '—' : `${n.dailyValuePercent}%`}</td>}
-    </tr>
-  ));
-  const intro = (
-    <p>
-      Tamaño de la porción: {product.servingSizeText || '—'}
-      <br />
-      Porciones por envase: {product.servingsPerContainer || '—'}
-    </p>
-  );
-  const footnote = <p className="fine-print">*% Valor Diario con base en una dieta de 2000 kcal.</p>;
-
-  if (product.twoColumns && rows.length > NUTRIMENTAL_SPLIT_THRESHOLD) {
-    const mid = Math.ceil(rows.length / 2);
-    return [
-      {
-        key: 'nutrimental',
-        node: (
-          <div className="nutrimental-box">
-            <h3>INFORMACIÓN NUTRIMENTAL</h3>
-            {intro}
-            <table className="nutrimental-table">
-              <thead>{headerRow}</thead>
-              <tbody>{rows.slice(0, mid)}</tbody>
-            </table>
-          </div>
-        ),
-      },
-      {
-        key: 'nutrimental-cont',
-        node: (
-          <div className="nutrimental-box">
-            <table className="nutrimental-table">
-              <thead>{headerRow}</thead>
-              <tbody>{rows.slice(mid)}</tbody>
-            </table>
-            {footnote}
-          </div>
-        ),
-      },
-    ];
-  }
-
-  return [
-    {
-      key: 'nutrimental',
-      node: (
-        <div className="nutrimental-box">
-          <h3>INFORMACIÓN NUTRIMENTAL</h3>
-          {intro}
-          <table className="nutrimental-table">
-            <thead>{headerRow}</thead>
-            <tbody>{rows}</tbody>
-          </table>
-          {footnote}
-        </div>
-      ),
-    },
-  ];
-}
-
 function buildBlocks(product: Product, sections: ReturnType<typeof getSections>, unitSuffix: string): Block[] {
   const blocks: Block[] = [];
 
-  blocks.push(...buildNutrimentalBlocks(product, unitSuffix));
+  blocks.push({
+    key: 'nutrimental',
+    node: (
+      <div className="nutrimental-box">
+        <h3>INFORMACIÓN NUTRIMENTAL</h3>
+        <p>
+          Tamaño de la porción: {product.servingSizeText || '—'}
+          <br />
+          Porciones por envase: {product.servingsPerContainer || '—'}
+        </p>
+        <table className="nutrimental-table">
+          <thead>
+            <tr>
+              <th>Nutrimento</th>
+              <th>Por 100 {unitSuffix}</th>
+              <th>Por porción</th>
+              {product.nutrients.some((n) => n.dailyValuePercent !== '' && n.dailyValuePercent !== undefined) && (
+                <th>% VD*</th>
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {product.nutrients.map((n) => (
+              <tr key={n.id} className={n.indent ? 'indent' : ''}>
+                <td>{n.labelEs || n.labelEn || '—'}</td>
+                <td>{n.amount === '' ? '—' : `${fmt(per100g(product, n))} ${n.unit}`}</td>
+                <td>{n.amount === '' ? '—' : `${fmt(n.amount)} ${n.unit}`}</td>
+                {product.nutrients.some((x) => x.dailyValuePercent !== '' && x.dailyValuePercent !== undefined) && (
+                  <td>{n.dailyValuePercent === '' || n.dailyValuePercent === undefined ? '—' : `${n.dailyValuePercent}%`}</td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="fine-print">*% Valor Diario con base en una dieta de 2000 kcal.</p>
+      </div>
+    ),
+  });
 
   if (sections.activeIngredients && product.activeIngredients.some((i) => i.nameEs || i.amount !== '')) {
     blocks.push({
