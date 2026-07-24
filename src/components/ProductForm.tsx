@@ -158,6 +158,31 @@ export default function ProductForm({ product, dictionary, onChange }: Props) {
             />
           </label>
         </div>
+        <p className="hint">
+          Si la etiqueta original trae dos porciones de referencia (por ejemplo "1 scoop" y "2
+          scoops"), captura aquí la otra y la tabla nutrimental agrega una columna extra con esos
+          valores, sin tener que escoger solo una.
+        </p>
+        <div className="form-grid">
+          <label>
+            Otra porción de referencia (texto, ej. "1 scoop (70 g)") — opcional
+            <input
+              value={product.secondServingSizeText}
+              onChange={(e) => patch({ secondServingSizeText: e.target.value })}
+            />
+          </label>
+          <label>
+            Multiplicador respecto a la porción principal (ej. 0.5 si es la mitad, 2 si es el doble)
+            <input
+              type="number"
+              step="0.1"
+              value={product.secondServingScale}
+              onChange={(e) =>
+                patch({ secondServingScale: e.target.value === '' ? '' : Number(e.target.value) })
+              }
+            />
+          </label>
+        </div>
       </section>
 
       <section>

@@ -43,6 +43,8 @@ function buildBlocks(product: Product, sections: ReturnType<typeof getSections>,
   const blocks: Block[] = [];
 
   const hasDV = product.nutrients.some((n) => n.dailyValuePercent !== '' && n.dailyValuePercent !== undefined);
+  const hasSecondServing = product.secondServingSizeText !== '' && product.secondServingScale !== '';
+  const secondServingScale = product.secondServingScale as number;
 
   blocks.push({
     key: 'nutrimental',
@@ -60,6 +62,7 @@ function buildBlocks(product: Product, sections: ReturnType<typeof getSections>,
               <th>Nutrimento</th>
               <th>Por 100 {unitSuffix}</th>
               <th>Por porción</th>
+              {hasSecondServing && <th>Por {product.secondServingSizeText}</th>}
               {hasDV && <th>% VD*</th>}
             </tr>
           </thead>
@@ -69,6 +72,9 @@ function buildBlocks(product: Product, sections: ReturnType<typeof getSections>,
                 <td>{n.labelEs || n.labelEn || '—'}</td>
                 <td>{n.amount === '' ? '—' : `${fmt(per100g(product, n))} ${n.unit}`}</td>
                 <td>{n.amount === '' ? '—' : `${fmt(n.amount)} ${n.unit}`}</td>
+                {hasSecondServing && (
+                  <td>{n.amount === '' ? '—' : `${fmt(n.amount * secondServingScale)} ${n.unit}`}</td>
+                )}
                 {hasDV && (
                   <td>{n.dailyValuePercent === '' || n.dailyValuePercent === undefined ? '—' : `${n.dailyValuePercent}%`}</td>
                 )}

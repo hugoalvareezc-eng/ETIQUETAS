@@ -22,6 +22,12 @@ para revisar, imprimir o exportar como imagen.
   NOM-051 (contenido energético, proteínas, grasas, carbohidratos, azúcares,
   fibra, sodio) y calcula automáticamente el valor "por 100 g" a partir de
   lo que captures "por porción".
+- **Segunda porción de referencia (opcional)**: si la etiqueta original trae
+  dos porciones distintas (por ejemplo, gainers que declaran "1 scoop" y "2
+  scoops"), captúrala en "Porción" con su multiplicador respecto a la
+  porción principal (0.5 si es la mitad, 2 si es el doble) y la tabla
+  nutrimental agrega una columna extra con esos valores, en vez de tener que
+  escoger solo una de las dos.
 - **Estimación de sellos de advertencia** (EXCESO CALORÍAS, AZÚCARES, GRASAS
   SATURADAS, GRASAS TRANS, SODIO) y leyendas de cafeína/edulcorantes, según
   los umbrales de la NOM-051-SCFI/SSA1-2010 (modificación 2020).

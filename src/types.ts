@@ -58,6 +58,12 @@ export interface Product {
   servingSizeText: string;
   servingSizeGrams: number | '';
   servingsPerContainer: number | '';
+  // Segunda porción de referencia opcional (ej. la etiqueta original trae
+  // "1 scoop" y "2 scoops" y no quieres perder ninguna de las dos): agrega
+  // una columna extra a la tabla nutrimental con cada valor multiplicado
+  // por este factor respecto a la porción principal. Vacío = no se muestra.
+  secondServingSizeText: string;
+  secondServingScale: number | '';
   isLiquid: boolean;
   labelWidthCm: number;
   labelHeightCm: number | '';

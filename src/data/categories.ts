@@ -139,6 +139,8 @@ export function createBlankProduct(category: Category): Product {
     servingSizeText: '',
     servingSizeGrams: '',
     servingsPerContainer: '',
+    secondServingSizeText: '',
+    secondServingScale: '',
     isLiquid: false,
     labelWidthCm: DEFAULT_LABEL_WIDTH_CM[category],
     labelHeightCm: '',
@@ -178,5 +180,7 @@ export function normalizeProduct(product: Product): Product {
     twoColumns: product.twoColumns ?? false,
     compact: product.compact ?? false,
     importedByEs: product.importedByEs ?? '',
+    secondServingSizeText: product.secondServingSizeText ?? '',
+    secondServingScale: product.secondServingScale ?? '',
   };
 }
