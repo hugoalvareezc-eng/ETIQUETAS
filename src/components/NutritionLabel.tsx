@@ -218,7 +218,10 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
   const showSweeteners = sections.seals && sweetenerLegendTriggered(product);
   const unitSuffix = product.isLiquid ? 'ml' : 'g';
   const width = widthCm ?? product.labelWidthCm;
-  const columnWidth = product.twoColumns ? (width - COLUMN_GAP_CM) / 2 : width;
+  const columnWidth =
+    product.columnCount > 1
+      ? (width - COLUMN_GAP_CM * (product.columnCount - 1)) / product.columnCount
+      : width;
   const baseFontSizeRem = 0.9 * widthScale(width) * (product.compact ? 0.85 : 1);
 
   const blocks = useMemo(
@@ -232,18 +235,18 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
   const [split, setSplit] = useState<ColumnSplit | null>(null);
 
   useLayoutEffect(() => {
-    if (!product.twoColumns) {
+    if (product.columnCount <= 1) {
       setSplit(null);
       return;
     }
     const items = blocks.map((b) => ({ key: b.key, height: blockRefs.current.get(b.key)?.offsetHeight ?? 0 }));
-    setSplit(balanceColumns(items));
-    // Re-medir cuando cambian los bloques, el ancho de columna, se activa/
-    // desactiva el modo, o cambia el tamaño de letra (modo compacto): el
-    // reparto de bloques por columna depende de cuánto mide cada uno, y eso
-    // cambia con la letra más chica.
+    setSplit(balanceColumns(items, product.columnCount));
+    // Re-medir cuando cambian los bloques, el ancho de columna, el número de
+    // columnas, o cambia el tamaño de letra (modo compacto): el reparto de
+    // bloques por columna depende de cuánto mide cada uno, y eso cambia con
+    // la letra más chica.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [product.twoColumns, blocksKey, columnWidth, product.compact]);
+  }, [product.columnCount, blocksKey, columnWidth, product.compact]);
 
   // Si se fijó un alto de etiqueta, encoge la letra lo necesario para que el
   // contenido quepa dentro de ese alto (con un piso mínimo de legibilidad).
@@ -252,7 +255,7 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [heightFitScale, setHeightFitScale] = useState(1);
   const [heightOverflow, setHeightOverflow] = useState(false);
-  const fitSignature = `${product.labelHeightCm}|${blocksKey}|${width}|${product.compact}|${product.twoColumns}|${split ? 'split' : 'nosplit'}`;
+  const fitSignature = `${product.labelHeightCm}|${blocksKey}|${width}|${product.compact}|${product.columnCount}|${split ? 'split' : 'nosplit'}`;
   // El ajuste de escala por alto fijo mide una sola vez por firma de
   // contenido y ya no vuelve a tocar el estado después de eso. El
   // texto puede reacomodarse en renglones distintos según el tamaño de
@@ -306,7 +309,7 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
 
   const fontSizeRem = baseFontSizeRem * heightFitScale;
 
-  const showBalanced = product.twoColumns && split;
+  const showBalanced = product.columnCount > 1 && split;
   const blockMap = new Map(blocks.map((b) => [b.key, b]));
 
   function renderBlock(block: Block) {
@@ -369,16 +372,15 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
 
       {showBalanced ? (
         <div className="label-body label-body-balanced" style={{ gap: `${COLUMN_GAP_CM}cm` }}>
-          <div className="label-column" style={{ width: `${columnWidth}cm` }}>
-            {split!.left.map((key) => blockMap.get(key)).filter((b): b is Block => !!b).map(renderBlock)}
-          </div>
-          <div className="label-column" style={{ width: `${columnWidth}cm` }}>
-            {split!.right.map((key) => blockMap.get(key)).filter((b): b is Block => !!b).map(renderBlock)}
-          </div>
+          {split!.map((columnKeys, i) => (
+            <div key={i} className="label-column" style={{ width: `${columnWidth}cm` }}>
+              {columnKeys.map((key) => blockMap.get(key)).filter((b): b is Block => !!b).map(renderBlock)}
+            </div>
+          ))}
         </div>
       ) : (
         <div className="label-body">
-          {product.twoColumns ? (
+          {product.columnCount > 1 ? (
             // Primer render mientras se mide cada bloque a su ancho de columna final.
             <div style={{ width: `${columnWidth}cm` }}>{blocks.map(renderBlock)}</div>
           ) : (

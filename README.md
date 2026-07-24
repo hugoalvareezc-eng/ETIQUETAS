@@ -54,22 +54,26 @@ para revisar, imprimir o exportar como imagen.
   etiqueta va pegada donde el nombre/marca ya se ve en otro lado). El
   dato sigue guardado, solo se oculta de la vista previa/impresión, así que
   lo puedes reactivar cuando quieras sin volver a capturarlo.
-- **Etiqueta en 2 columnas**: si el ancho de la etiqueta es amplio (por
-  ejemplo, un bote grande de proteína) pero el contenido queda muy largo/alto,
-  activa "Acomodar el contenido en 2 columnas" en "Datos generales" para que
-  la tabla nutrimental, ingredientes, modo de uso y advertencias se
-  distribuyan en dos columnas y la etiqueta salga bastante más baja. La app
-  reparte primero los demás bloques (ingredientes, modo de uso, advertencias,
-  etc.) buscando que ambas columnas queden lo más parejas posible; la tabla
-  nutrimental siempre se muestra completa y sin partir en una sola columna.
-  Si esa columna corta le sobra espacio (porque la tabla nutrimental por sí
-  sola es más alta que el resto del contenido junto), sus bloques se
-  reparten a lo largo de toda la columna en vez de amontonarse arriba y
-  dejar todo el espacio libre junto abajo.
+- **Etiqueta en 2 o 3 columnas**: si el ancho de la etiqueta es amplio (por
+  ejemplo, un bote grande de proteína, o un producto "chaparro" pero ancho)
+  pero el contenido queda muy largo/alto, elige "2 columnas" o "3 columnas"
+  en "Número de columnas" (Datos generales) para que la tabla nutrimental,
+  ingredientes, modo de uso y advertencias se distribuyan en esas columnas y
+  la etiqueta salga bastante más baja. La app reparte primero los demás
+  bloques (ingredientes, modo de uso, advertencias, etc.) buscando que todas
+  las columnas queden lo más parejas posible en altura; la tabla nutrimental
+  siempre se muestra completa y sin partir en una sola columna. Si a alguna
+  columna le sobra espacio (porque la tabla nutrimental por sí sola es más
+  alta que el resto del contenido junto), sus bloques se reparten a lo largo
+  de toda la columna en vez de amontonarse arriba y dejar todo el espacio
+  libre junto abajo. Ojo: 3 columnas solo se ve bien en etiquetas realmente
+  anchas (18-25 cm o más); en una etiqueta de ancho normal (8-10 cm) las
+  columnas quedan demasiado angostas para la tabla nutrimental y el texto se
+  encima.
 - **Modo compacto**: si la etiqueta sigue quedando muy alta (por ejemplo, en
-  una etiqueta angosta donde no conviene usar 2 columnas), activa "Modo
+  una etiqueta angosta donde no conviene usar varias columnas), activa "Modo
   compacto" en "Datos generales" para reducir espacios y tamaño de letra sin
-  quitar información. Se puede combinar con las 2 columnas para bajar la
+  quitar información. Se puede combinar con las columnas para bajar la
   altura todavía más.
 - **Escalado continuo por ancho**: la letra, los sellos de advertencia y los
   espacios internos se van achicando en proporción real al ancho de la

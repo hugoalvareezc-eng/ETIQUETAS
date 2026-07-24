@@ -144,7 +144,7 @@ export function createBlankProduct(category: Category): Product {
     isLiquid: false,
     labelWidthCm: DEFAULT_LABEL_WIDTH_CM[category],
     labelHeightCm: '',
-    twoColumns: false,
+    columnCount: 1,
     compact: false,
     nutrients: [...coreNutrients(), ...extraNutrients(category)],
     activeIngredients: defaultActiveIngredients(category),
@@ -173,11 +173,14 @@ export function categoryLabel(id: Category): string {
 // productos que ya estaban guardados en el navegador, para que no se rompan
 // al agregar opciones nuevas (ancho de etiqueta, columnas, secciones, etc.).
 export function normalizeProduct(product: Product): Product {
+  // Productos guardados/importados antes de que "columnCount" existiera
+  // traían "twoColumns" (true/false) en su lugar; se migra a 2 o 1 columnas.
+  const legacy = product as Product & { twoColumns?: boolean };
   return {
     ...product,
     labelWidthCm: product.labelWidthCm ?? DEFAULT_LABEL_WIDTH_CM[product.category],
     labelHeightCm: product.labelHeightCm ?? '',
-    twoColumns: product.twoColumns ?? false,
+    columnCount: product.columnCount ?? (legacy.twoColumns ? 2 : 1),
     compact: product.compact ?? false,
     importedByEs: product.importedByEs ?? '',
     secondServingSizeText: product.secondServingSizeText ?? '',

@@ -68,12 +68,16 @@ export function parseProductsJson(text: string): Product[] {
 
   const now = Date.now();
   return raw.map((entry) => {
-    const e = entry as Partial<Product> & { category?: Category };
+    const e = entry as Partial<Product> & { category?: Category; twoColumns?: boolean };
     const category: Category = e.category ?? 'generico';
     const base = createBlankProduct(category);
     return normalizeProduct({
       ...base,
       ...e,
+      // "columnCount" no viene en catálogos viejos (usaban "twoColumns"); si no
+      // se resuelve aquí, el spread de "base" (columnCount: 1) lo tapa antes de
+      // que normalizeProduct pueda migrar el valor legado.
+      columnCount: e.columnCount ?? (e.twoColumns ? 2 : base.columnCount),
       nutrients: mergeNutrients(base.nutrients, e.nutrients),
       activeIngredients: e.activeIngredients ? withIds(e.activeIngredients, 'ai') : base.activeIngredients,
       id: newId('prod'),

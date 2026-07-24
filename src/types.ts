@@ -67,7 +67,10 @@ export interface Product {
   isLiquid: boolean;
   labelWidthCm: number;
   labelHeightCm: number | '';
-  twoColumns: boolean;
+  // Cuántas columnas usar para acomodar el contenido de la etiqueta (1 =
+  // normal). Útil para etiquetas anchas y bajas ("chaparras"), donde 2 o 3
+  // columnas dejan la etiqueta bastante menos alta.
+  columnCount: 1 | 2 | 3;
   compact: boolean;
   nutrients: Nutrient[];
   activeIngredients: ActiveIngredient[];

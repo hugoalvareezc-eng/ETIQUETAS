@@ -92,13 +92,16 @@ export default function ProductForm({ product, dictionary, onChange }: Props) {
               placeholder="Automático"
             />
           </label>
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
-              checked={product.twoColumns}
-              onChange={(e) => patch({ twoColumns: e.target.checked })}
-            />
-            Acomodar el contenido en 2 columnas (para etiquetas anchas con mucho texto)
+          <label>
+            Número de columnas (para etiquetas anchas y bajas, con mucho texto)
+            <select
+              value={product.columnCount}
+              onChange={(e) => patch({ columnCount: Number(e.target.value) as 1 | 2 | 3 })}
+            >
+              <option value={1}>1 (normal)</option>
+              <option value={2}>2 columnas</option>
+              <option value={3}>3 columnas (productos chaparros y anchos)</option>
+            </select>
           </label>
           <label className="checkbox-label">
             <input
