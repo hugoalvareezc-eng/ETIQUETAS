@@ -22,9 +22,9 @@ function toNumber(v: number | ''): number {
   return v === '' ? 0 : v;
 }
 
-export function per100g(product: Product, nutrient: Nutrient): number {
+export function per100g(product: Product, item: { amount: number | '' }): number {
   const servingG = toNumber(product.servingSizeGrams);
-  const amount = toNumber(nutrient.amount);
+  const amount = toNumber(item.amount);
   if (!servingG) return 0;
   return (amount / servingG) * 100;
 }

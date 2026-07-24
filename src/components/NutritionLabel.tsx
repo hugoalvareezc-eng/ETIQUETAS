@@ -94,13 +94,25 @@ function buildBlocks(product: Product, sections: ReturnType<typeof getSections>,
         <div className="active-ingredients-box">
           <h3>Ingredientes activos</h3>
           <table className="nutrimental-table">
+            <thead>
+              <tr>
+                <th>Ingrediente</th>
+                <th>Por 100 {unitSuffix}</th>
+                <th>Por porción</th>
+                {hasSecondServing && <th>Por {product.secondServingSizeText}</th>}
+              </tr>
+            </thead>
             <tbody>
               {product.activeIngredients
                 .filter((i) => i.nameEs || i.amount !== '')
                 .map((i) => (
                   <tr key={i.id}>
                     <td>{i.nameEs || i.nameEn}</td>
+                    <td>{i.amount === '' ? '—' : `${fmt(per100g(product, i))} ${i.unit}`}</td>
                     <td>{i.amount === '' ? '—' : `${i.amount} ${i.unit}`}</td>
+                    {hasSecondServing && (
+                      <td>{i.amount === '' ? '—' : `${fmt((i.amount as number) * secondServingScale)} ${i.unit}`}</td>
+                    )}
                   </tr>
                 ))}
             </tbody>
