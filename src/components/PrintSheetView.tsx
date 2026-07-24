@@ -16,6 +16,33 @@ interface Instance {
   product: Product;
 }
 
+function labelCaptionText(product: Product): string {
+  const name = product.productNameEs || product.productNameEn || 'Sin nombre';
+  return product.flavor ? `${name} · ${product.flavor}` : name;
+}
+
+// Tarjeta = etiqueta + una franja angosta con el nombre del producto arriba,
+// para poder distinguir a simple vista cuál etiqueta es cuál antes de
+// recortarlas cuando la hoja trae varios productos distintos revueltos. Se
+// usa tanto para medir (mismo alto real que se va a acomodar) como para el
+// render final, así el alto medido siempre incluye la franja.
+function LabelCard({
+  product,
+  widthCm,
+  measureRef,
+}: {
+  product: Product;
+  widthCm: number;
+  measureRef?: (el: HTMLDivElement | null) => void;
+}) {
+  return (
+    <div ref={measureRef} style={{ width: `${widthCm}cm` }}>
+      <div className="label-caption">{labelCaptionText(product)}</div>
+      <NutritionLabel product={product} widthCm={widthCm} />
+    </div>
+  );
+}
+
 export default function PrintSheetView({ products }: Props) {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [pageSizeId, setPageSizeId] = useState(PAGE_SIZES[0].id);
@@ -80,9 +107,24 @@ export default function PrintSheetView({ products }: Props) {
     setQuantities((prev) => ({ ...prev, [id]: Math.max(0, qty) }));
   }
 
+  // Selecciona (con 1 copia) todos los productos visibles con el filtro
+  // actual, sin tocar la cantidad de los que ya tenían algo capturado.
+  function selectAllVisible() {
+    setQuantities((prev) => {
+      const next = { ...prev };
+      for (const p of filteredProducts) {
+        if (!next[p.id]) next[p.id] = 1;
+      }
+      return next;
+    });
+  }
+
   const totalLabels = instances.length;
   const pageCount = packResult?.pageCount ?? 0;
 
+  // Una etiqueta solo se marca como "no cabe" si de plano no entra en la
+  // hoja ni normal ni girada 90° — si cabe girada, el empaquetado ya la
+  // acomoda así y no hace falta advertir nada.
   const oversizedProducts = useMemo(() => {
     if (!heights) return [];
     const seen = new Set<string>();
@@ -90,22 +132,28 @@ export default function PrintSheetView({ products }: Props) {
     for (const inst of instances) {
       if (seen.has(inst.product.id)) continue;
       const h = heights[inst.instanceId];
-      if (h && h > contentHeightCm) {
+      const w = inst.product.labelWidthCm;
+      if (!h) continue;
+      const fitsNormal = h <= contentHeightCm && w <= contentWidthCm;
+      const fitsRotated = w <= contentHeightCm && h <= contentWidthCm;
+      if (!fitsNormal && !fitsRotated) {
         seen.add(inst.product.id);
         list.push({ name: inst.product.productNameEs || inst.product.productNameEn || 'Sin nombre', heightCm: h });
       }
     }
     return list;
-  }, [heights, instances, contentHeightCm]);
+  }, [heights, instances, contentHeightCm, contentWidthCm]);
 
   return (
     <div className="print-sheet-view">
       <div className="no-print">
         <h2>Hoja de impresión (varias etiquetas por hoja)</h2>
         <p className="hint">
-          Elige cuántas copias de cada etiqueta necesitas. La app las acomoda automáticamente
-          en la hoja según el ancho de etiqueta de cada producto (configurable en cada producto,
-          en "Datos generales"), para desperdiciar el menor papel posible.
+          Elige cuántas copias de cada etiqueta necesitas. La app las acomoda automáticamente en
+          la hoja según el ancho de etiqueta de cada producto (configurable en cada producto, en
+          "Datos generales"), probando acomodarlas normales o giradas 90° para desperdiciar el
+          menor papel posible. Arriba de cada etiqueta impresa se agrega una franja angosta con el
+          nombre del producto, para distinguirlas antes de recortarlas.
         </p>
 
         <div className="sheet-controls">
@@ -157,6 +205,11 @@ export default function PrintSheetView({ products }: Props) {
                 </option>
               ))}
             </select>
+            {filteredProducts.length > 0 && (
+              <button type="button" onClick={selectAllVisible}>
+                Seleccionar todas las visibles (1 copia c/u)
+              </button>
+            )}
           </div>
         )}
 
@@ -199,7 +252,7 @@ export default function PrintSheetView({ products }: Props) {
 
         {oversizedProducts.length > 0 && (
           <div className="warning-banner">
-            <strong>⚠ Estas etiquetas son más altas que el espacio disponible en la hoja:</strong>
+            <strong>⚠ Estas etiquetas no caben en la hoja ni normales ni giradas 90°:</strong>
             <ul>
               {oversizedProducts.map((o) => (
                 <li key={o.name}>
@@ -233,14 +286,16 @@ export default function PrintSheetView({ products }: Props) {
         )}
       </div>
 
-      {/* Bloque de medición oculto: mismo ancho real que la etiqueta final, para saber cuánto alto ocupa cada una antes de acomodarlas. */}
+      {/* Bloque de medición oculto: misma tarjeta (etiqueta + franja de
+          nombre) que se va a imprimir, sin girar, para saber cuánto alto
+          ocupa cada una antes de acomodarlas. */}
       <div style={{ position: 'absolute', left: -9999, top: 0, visibility: 'hidden' }} aria-hidden="true">
         {instances.map((inst) => (
-          <NutritionLabel
+          <LabelCard
             key={inst.instanceId}
             product={inst.product}
             widthCm={inst.product.labelWidthCm}
-            ref={(el) => {
+            measureRef={(el) => {
               measureRefs.current.set(inst.instanceId, el);
             }}
           />
@@ -264,12 +319,35 @@ export default function PrintSheetView({ products }: Props) {
                 .filter((inst) => packResult.positions.get(inst.instanceId)?.page === pageIndex)
                 .map((inst) => {
                   const pos = packResult.positions.get(inst.instanceId)!;
+                  const naturalWidth = inst.product.labelWidthCm;
+                  const naturalHeight = heights?.[inst.instanceId] ?? 0;
+                  const footprintWidth = pos.rotated ? naturalHeight : naturalWidth;
+                  const footprintHeight = pos.rotated ? naturalWidth : naturalHeight;
                   return (
                     <div
                       key={inst.instanceId}
-                      style={{ position: 'absolute', left: `${pos.xCm}cm`, top: `${pos.yCm}cm` }}
+                      style={{
+                        position: 'absolute',
+                        left: `${pos.xCm}cm`,
+                        top: `${pos.yCm}cm`,
+                        width: `${footprintWidth}cm`,
+                        height: `${footprintHeight}cm`,
+                        overflow: 'hidden',
+                      }}
                     >
-                      <NutritionLabel product={inst.product} widthCm={inst.product.labelWidthCm} />
+                      {pos.rotated ? (
+                        <div
+                          style={{
+                            width: `${naturalWidth}cm`,
+                            transformOrigin: 'top left',
+                            transform: 'rotate(90deg) translateY(-100%)',
+                          }}
+                        >
+                          <LabelCard product={inst.product} widthCm={naturalWidth} />
+                        </div>
+                      ) : (
+                        <LabelCard product={inst.product} widthCm={naturalWidth} />
+                      )}
                     </div>
                   );
                 })}

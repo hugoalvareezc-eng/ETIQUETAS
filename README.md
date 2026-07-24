@@ -90,9 +90,17 @@ para revisar, imprimir o exportar como imagen.
   elige cuántas copias de cada producto necesitas y la app las acomoda solas
   en hojas tamaño Carta o A4 para aprovechar el papel, respetando el ancho de
   etiqueta configurado por producto (una proteína grande no ocupa lo mismo
-  que un pre-entreno chico). Si el contenido de una etiqueta es más alto que
-  el espacio disponible en la hoja, te avisa para que agrandes el ancho de
-  esa etiqueta o la imprimas aparte.
+  que un pre-entreno chico). El acomodo prueba cada etiqueta normal o girada
+  90° y usa la que deje menos espacio en blanco, para no terminar con una
+  sola etiqueta por hoja cuando caben varias. Arriba de cada etiqueta
+  impresa se agrega una franja angosta con el nombre y sabor del producto
+  (se imprime, pero es fácil recortarla después), para no confundirlas
+  cuando la hoja trae varios productos distintos. El botón "Seleccionar
+  todas las visibles" marca con 1 copia todos los productos que coincidan
+  con el buscador/filtro activo, para armar rápido una hoja con todo un
+  lote o una marca. Si el contenido de una etiqueta es más alto que el
+  espacio disponible en la hoja incluso girándola, te avisa para que
+  agrandes el ancho de esa etiqueta o la imprimas aparte.
 
 ## Cómo correrlo
 

@@ -696,6 +696,23 @@ textarea {
   overflow: hidden;
 }
 
+/* Franja angosta con el nombre del producto arriba de cada etiqueta en la
+   hoja de impresión, para distinguirlas antes de recortarlas cuando hay
+   varios productos distintos en la misma hoja. Sí se imprime (no lleva
+   no-print) porque su propósito es guiar el recorte físico después. */
+.label-caption {
+  font-size: 0.5rem;
+  line-height: 1.2;
+  color: #000;
+  text-align: center;
+  padding-bottom: 0.05cm;
+  margin-bottom: 0.15cm;
+  border-bottom: 1px dashed #999;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .sheet-page-label {
   position: absolute;
   top: -1.4rem;
