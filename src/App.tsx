@@ -63,7 +63,14 @@ export default function App() {
   }
 
   function handleImport(imported: Product[]) {
-    setProducts((prev) => [...imported, ...prev]);
+    // Si el JSON importado trae productos con el mismo id que uno ya guardado
+    // (por ejemplo, un catálogo previamente exportado y luego corregido), se
+    // reemplaza ese producto en vez de duplicarlo; los demás no se tocan.
+    setProducts((prev) => {
+      const importedIds = new Set(imported.map((p) => p.id));
+      const kept = prev.filter((p) => !importedIds.has(p.id));
+      return [...imported, ...kept];
+    });
   }
 
   function addCustomDictionaryEntry(entry: DictionaryEntry) {

@@ -80,8 +80,11 @@ export function parseProductsJson(text: string): Product[] {
       columnCount: e.columnCount ?? (e.twoColumns ? 2 : base.columnCount),
       nutrients: mergeNutrients(base.nutrients, e.nutrients),
       activeIngredients: e.activeIngredients ? withIds(e.activeIngredients, 'ai') : base.activeIngredients,
-      id: newId('prod'),
-      createdAt: now,
+      // Si el JSON ya trae un "id" (por ejemplo, es un catálogo exportado antes
+      // y ahora corregido) se conserva, para que al reimportarlo la app pueda
+      // reemplazar ese producto en vez de crear uno duplicado.
+      id: e.id || newId('prod'),
+      createdAt: e.createdAt ?? now,
       updatedAt: now,
     });
   });
