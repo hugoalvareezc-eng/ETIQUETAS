@@ -217,6 +217,8 @@ export default function PrintSheetView({ products }: Props) {
           <thead>
             <tr>
               <th>Producto</th>
+              <th>Sabor</th>
+              <th>Contenido neto</th>
               <th>Categoría</th>
               <th>Ancho etiqueta</th>
               <th>Copias</th>
@@ -226,6 +228,8 @@ export default function PrintSheetView({ products }: Props) {
             {filteredProducts.map((p) => (
               <tr key={p.id}>
                 <td>{p.productNameEs || p.productNameEn || 'Sin nombre'}</td>
+                <td>{p.flavor || '—'}</td>
+                <td>{p.netContent || '—'}</td>
                 <td>{categoryLabel(p.category)}</td>
                 <td>{p.labelWidthCm} cm</td>
                 <td>
