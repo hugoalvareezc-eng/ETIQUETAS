@@ -15,13 +15,19 @@ interface Props {
 // Alto mínimo al que se permite encoger la letra para que el contenido quepa
 // en un alto fijo, antes de simplemente avisar que ya no cabe.
 const MIN_HEIGHT_FIT_SCALE = 0.6;
+// Tamaño de letra absoluto más chico permitido, sin importar cuánto se
+// combinen el achicado por ancho (columnas angostas) y por alto fijo: por
+// debajo de esto el texto deja de ser legible aunque "matemáticamente" quepa.
+// Si ni a este tamaño cabe, se prefiere que la etiqueta crezca más alta de lo
+// pedido (ver heightOverflow) a volverse ilegible.
+const ABSOLUTE_MIN_FONT_REM = 0.5;
 
 interface Block {
   key: string;
   node: ReactNode;
 }
 
-const COLUMN_GAP_CM = 0.5;
+export const COLUMN_GAP_CM = 0.5;
 // Ancho de referencia para el que el texto se ve a tamaño "normal" (0.9rem).
 // Por debajo de esto, la letra y el "relleno" (sellos, márgenes, celdas)
 // se van achicando en proporción al ancho real, en vez de quedarse fijos
@@ -222,7 +228,12 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
     product.columnCount > 1
       ? (width - COLUMN_GAP_CM * (product.columnCount - 1)) / product.columnCount
       : width;
-  const baseFontSizeRem = 0.9 * widthScale(width) * (product.compact ? 0.85 : 1);
+  // La letra (y todo lo demás medido en "em": sellos, rellenos, márgenes) se
+  // escala según el ancho real de cada columna, no el ancho total de la
+  // etiqueta — si no, con varias columnas la letra queda de tamaño normal
+  // aunque cada columna sea angosta, y el texto largo se parte feo a media
+  // palabra en vez de simplemente verse más chico.
+  const baseFontSizeRem = 0.9 * widthScale(columnWidth) * (product.compact ? 0.85 : 1);
 
   const blocks = useMemo(
     () => buildBlocks(product, sections, unitSuffix),
@@ -296,7 +307,12 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
     if (naturalCm > targetCm + 0.02) {
       const needed = Math.max(MIN_HEIGHT_FIT_SCALE, targetCm / naturalCm);
       setHeightFitScale(needed);
-      setHeightOverflow(needed <= MIN_HEIGHT_FIT_SCALE + 0.001);
+      // También cuenta como "no cabe" si la letra resultante (ya combinada
+      // con el achicado por ancho de columna) quedaría por debajo del piso
+      // de legibilidad absoluto, aunque la proporción alto/necesario no
+      // haya tocado todavía el piso de MIN_HEIGHT_FIT_SCALE.
+      const wouldBeIllegible = needed * baseFontSizeRem < ABSOLUTE_MIN_FONT_REM;
+      setHeightOverflow(needed <= MIN_HEIGHT_FIT_SCALE + 0.001 || wouldBeIllegible);
     } else {
       setHeightOverflow(false);
     }
@@ -307,7 +323,7 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
     onOverflowChange?.(heightOverflow);
   }, [heightOverflow, onOverflowChange]);
 
-  const fontSizeRem = baseFontSizeRem * heightFitScale;
+  const fontSizeRem = Math.max(ABSOLUTE_MIN_FONT_REM, baseFontSizeRem * heightFitScale);
 
   const showBalanced = product.columnCount > 1 && split;
   const blockMap = new Map(blocks.map((b) => [b.key, b]));

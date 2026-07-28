@@ -350,6 +350,10 @@ textarea {
   color: var(--muted);
 }
 
+.hint-warning {
+  color: #8a6100;
+}
+
 .nutrient-editor table {
   width: 100%;
   border-collapse: collapse;

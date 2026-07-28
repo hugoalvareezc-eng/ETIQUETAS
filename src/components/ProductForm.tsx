@@ -4,6 +4,12 @@ import ActiveIngredientsEditor from './ActiveIngredientsEditor';
 import StringListEditor from './StringListEditor';
 import { lookupTranslation, translateBlock } from '../utils/translate';
 import { getSections, SECTION_LABELS, SECTION_ORDER } from '../utils/sections';
+import { COLUMN_GAP_CM } from './NutritionLabel';
+
+// Por debajo de esto una columna queda demasiado angosta para nombres de
+// ingredientes largos: el texto se parte a media palabra en vez de verse
+// legible. Es solo una guía para avisar en el formulario, no un límite duro.
+const MIN_COMFORTABLE_COLUMN_CM = 4;
 
 interface Props {
   product: Product;
@@ -17,6 +23,10 @@ export default function ProductForm({ product, dictionary, onChange }: Props) {
   }
 
   const sections = getSections(product);
+  const columnWidthCm =
+    product.columnCount > 1 && product.labelWidthCm > 0
+      ? (product.labelWidthCm - COLUMN_GAP_CM * (product.columnCount - 1)) / product.columnCount
+      : null;
 
   function toggleSection(key: SectionKey, checked: boolean) {
     patch({ sections: { ...sections, [key]: checked } });
@@ -103,6 +113,14 @@ export default function ProductForm({ product, dictionary, onChange }: Props) {
               <option value={3}>3 columnas (productos chaparros y anchos)</option>
             </select>
           </label>
+          {columnWidthCm !== null && columnWidthCm < MIN_COMFORTABLE_COLUMN_CM && (
+            <p className="hint hint-warning">
+              ⚠ Con {product.columnCount} columnas y {product.labelWidthCm} cm de ancho, cada
+              columna queda en ~{columnWidthCm.toFixed(1)} cm — muy angosto para nombres de
+              ingredientes largos, el texto se va a partir feo a media palabra. Baja el número de
+              columnas o aumenta el ancho de la etiqueta.
+            </p>
+          )}
           <label className="checkbox-label">
             <input
               type="checkbox"
