@@ -154,6 +154,7 @@ export function createBlankProduct(category: Category): Product {
     warningsEs: defaultWarnings(category),
     allergenEs: '',
     storageEs: 'Almacenar en un lugar fresco y seco, fuera de la luz solar directa. Cerrar bien después de cada uso.',
+    disclaimerEs: '',
     responsibleEs: '',
     importedByEs: '',
     containsCaffeine: category === 'preentreno',
@@ -185,5 +186,6 @@ export function normalizeProduct(product: Product): Product {
     importedByEs: product.importedByEs ?? '',
     secondServingSizeText: product.secondServingSizeText ?? '',
     secondServingScale: product.secondServingScale ?? '',
+    disclaimerEs: product.disclaimerEs ?? '',
   };
 }

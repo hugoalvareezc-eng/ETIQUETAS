@@ -9,6 +9,7 @@ export const DEFAULT_SECTIONS: Sections = {
   warnings: true,
   allergen: true,
   storage: true,
+  disclaimer: true,
   responsible: true,
   importedBy: true,
 };
@@ -22,6 +23,7 @@ export const SECTION_LABELS: Record<SectionKey, string> = {
   warnings: 'Advertencias',
   allergen: 'Alérgenos',
   storage: 'Conservación',
+  disclaimer: 'Aviso en negritas',
   responsible: 'Responsable / distribuido por',
   importedBy: 'Importado y distribuido por',
 };
@@ -35,6 +37,7 @@ export const SECTION_ORDER: SectionKey[] = [
   'warnings',
   'allergen',
   'storage',
+  'disclaimer',
   'responsible',
   'importedBy',
 ];

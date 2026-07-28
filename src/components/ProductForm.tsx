@@ -316,6 +316,10 @@ export default function ProductForm({ product, dictionary, onChange }: Props) {
             <input value={product.storageEs} onChange={(e) => patch({ storageEs: e.target.value })} />
           </label>
           <label>
+            Aviso en negritas (ej. "Este producto no es un medicamento...") — sin encabezado propio
+            <input value={product.disclaimerEs} onChange={(e) => patch({ disclaimerEs: e.target.value })} />
+          </label>
+          <label>
             Responsable / distribuido por (razón social, dirección)
             <input value={product.responsibleEs} onChange={(e) => patch({ responsibleEs: e.target.value })} />
           </label>

@@ -42,6 +42,7 @@ export type SectionKey =
   | 'warnings'
   | 'allergen'
   | 'storage'
+  | 'disclaimer'
   | 'responsible'
   | 'importedBy';
 
@@ -80,6 +81,9 @@ export interface Product {
   warningsEs: string[];
   allergenEs: string;
   storageEs: string;
+  // Aviso corto que se imprime en negritas (ej. "Este producto no es un
+  // medicamento..."), sin encabezado propio, separado de "Advertencias".
+  disclaimerEs: string;
   responsibleEs: string;
   importedByEs: string;
   containsCaffeine: boolean;

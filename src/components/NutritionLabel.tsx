@@ -192,6 +192,17 @@ function buildBlocks(product: Product, sections: ReturnType<typeof getSections>,
     });
   }
 
+  if (sections.disclaimer && product.disclaimerEs) {
+    blocks.push({
+      key: 'disclaimer',
+      node: (
+        <div className="text-block">
+          <p className="disclaimer-text">{product.disclaimerEs}</p>
+        </div>
+      ),
+    });
+  }
+
   if (sections.responsible && product.responsibleEs) {
     blocks.push({
       key: 'responsible',
