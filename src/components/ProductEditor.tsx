@@ -41,11 +41,13 @@ export default function ProductEditor({ product, customDictionary, onChange, onB
     // etiquetas, que sí necesita tamaño Carta/A4 normal.
     const widthCm = product.labelWidthCm + PRINT_AREA_PADDING_CM * 2;
     const heightPx = labelRef.current?.getBoundingClientRect().height ?? 0;
-    // Si el contenido no cupo en el alto fijo (heightOverflow), la etiqueta ya
-    // se dejó crecer más allá de ese alto para no perder contenido; hay que
-    // usar su alto real ya renderizado, no el alto fijo original, para que el
-    // tamaño de página de impresión no la vuelva a recortar.
-    const contentHeightCm = product.labelHeightCm && !heightOverflow ? product.labelHeightCm : pxToCm(heightPx);
+    // El tamaño de página de impresión siempre respeta el alto fijo que se
+    // configuró (nunca se agranda solo): casi siempre corresponde a una
+    // hoja de etiquetas física de tamaño exacto. Si el contenido no cabe
+    // (heightOverflow), el navegador simplemente sigue imprimiendo el
+    // sobrante en páginas adicionales del mismo tamaño, en vez de perderlo
+    // o de imprimir una página más grande de lo que pediste.
+    const contentHeightCm = product.labelHeightCm || pxToCm(heightPx);
     const heightCm = contentHeightCm + PRINT_AREA_PADDING_CM * 2;
 
     let styleEl = document.getElementById(SINGLE_PRINT_STYLE_ID) as HTMLStyleElement | null;
@@ -92,12 +94,12 @@ export default function ProductEditor({ product, customDictionary, onChange, onB
             {heightOverflow && (
               <div className="warning-banner no-print">
                 <strong>⚠ El contenido no cabe en el alto fijo que pusiste</strong>, ni siquiera
-                encogiendo la letra al mínimo legible. Para no perder advertencias, ingredientes u
-                otros datos obligatorios, la etiqueta se dejó más alta de lo que pediste (se ve y se
-                imprime completa, no se recorta). Si tu etiqueta física es muy chica y de plano no
-                entra todo, prueba: quitar alguna sección opcional, activar varias columnas, o usar
-                un ancho mayor — si aun así no alcanza, considera imprimir el sobrante en una tira
-                de etiqueta extra para pegar aparte.
+                encogiendo la letra al mínimo legible — el tamaño de la etiqueta se respeta tal
+                cual lo indicaste, así que lo que sobra se ve desbordado abajo (no se recorta en
+                silencio, pero tampoco se agranda la etiqueta solo). Para que quepa todo, quita
+                alguna sección opcional, activa varias columnas, o usa un ancho o alto mayor — si
+                de plano no alcanza, al imprimir el sobrante sale en página(s) extra del mismo
+                tamaño para pegar aparte.
               </div>
             )}
             <div className="print-area">

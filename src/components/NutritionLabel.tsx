@@ -348,13 +348,16 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
       style={{
         width: `${width}cm`,
         fontSize: `${fontSizeRem.toFixed(3)}rem`,
-        // Si el contenido no cabe ni encogiendo la letra al mínimo legible
-        // (heightOverflow), se deja crecer la etiqueta más allá del alto
-        // fijo en vez de recortarla con "overflow: hidden": es preferible
-        // una etiqueta más alta de lo pedido a perder en silencio datos
-        // obligatorios (advertencias, ingredientes, tabla nutrimental).
-        ...(product.labelHeightCm && !heightOverflow
-          ? { height: `${product.labelHeightCm}cm`, overflow: 'hidden' }
+        // El alto fijo que pide el usuario SIEMPRE se respeta tal cual —
+        // nunca se agranda la etiqueta por su cuenta, porque casi siempre
+        // corresponde a una hoja de etiquetas físicas de tamaño exacto (ni
+        // un mm más). Si el contenido no cabe ni encogiendo la letra al
+        // mínimo legible, "overflow: visible" hace que se vea claramente
+        // desbordado en pantalla (nunca invisible/recortado en silencio) —
+        // el aviso de arriba explica que hay que quitar contenido, no que
+        // la etiqueta se vaya a hacer más grande sola.
+        ...(product.labelHeightCm
+          ? { height: `${product.labelHeightCm}cm`, overflow: 'visible' }
           : null),
       }}
       ref={(el) => {
