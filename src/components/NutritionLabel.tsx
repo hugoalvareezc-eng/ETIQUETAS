@@ -3,13 +3,18 @@ import { Product } from '../types';
 import { per100g, computeSeals, caffeineLegendTriggered, sweetenerLegendTriggered } from '../data/nom051';
 import { categoryLabel } from '../data/categories';
 import { getSections } from '../utils/sections';
-import { balanceColumns, ColumnSplit } from '../utils/balanceColumns';
+import { balanceColumns, suggestColumnCount, ColumnSplit } from '../utils/balanceColumns';
 import { cmToPx } from '../utils/units';
 
 interface Props {
   product: Product;
   widthCm?: number;
   onOverflowChange?: (overflowing: boolean) => void;
+  onColumnSuggestion?: (suggestedColumnCount: number | null) => void;
+  // Qué tan chico se dejó el contenido (transform: scale) para caber en el
+  // alto fijo. 1 = tamaño normal, sin reescalar. Sirve para que quien
+  // exporte a PNG compense con más resolución y no salga borroso/pixeleado.
+  onScaleChange?: (scale: number) => void;
 }
 
 interface Block {
@@ -218,7 +223,7 @@ function buildBlocks(product: Product, sections: ReturnType<typeof getSections>,
   return blocks;
 }
 
-const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, onOverflowChange }, ref) => {
+const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, onOverflowChange, onColumnSuggestion, onScaleChange }, ref) => {
   const sections = getSections(product);
   const seals = sections.seals ? computeSeals(product).filter((s) => s.triggered) : [];
   const showCaffeine = sections.seals && caffeineLegendTriggered(product);
@@ -245,20 +250,32 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
 
   const blockRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
   const [split, setSplit] = useState<ColumnSplit | null>(null);
+  const [columnSuggestion, setColumnSuggestion] = useState<number | null>(null);
 
   useLayoutEffect(() => {
     if (product.columnCount <= 1) {
       setSplit(null);
+      setColumnSuggestion(null);
       return;
     }
     const items = blocks.map((b) => ({ key: b.key, height: blockRefs.current.get(b.key)?.offsetHeight ?? 0 }));
     setSplit(balanceColumns(items, product.columnCount));
+    // Si un bloque que no se puede partir (ej. la tabla nutrimental) ya es
+    // tan alto por sí solo que ninguna combinación del resto va a llenar
+    // las demás columnas, usar tantas columnas deja espacio en blanco que
+    // no tiene arreglo — se sugiere usar menos.
+    const suggestion = suggestColumnCount(items, product.columnCount);
+    setColumnSuggestion(suggestion < product.columnCount ? suggestion : null);
     // Re-medir cuando cambian los bloques, el ancho de columna, el número de
     // columnas, o cambia el tamaño de letra (modo compacto): el reparto de
     // bloques por columna depende de cuánto mide cada uno, y eso cambia con
     // la letra más chica.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product.columnCount, blocksKey, columnWidth, product.compact]);
+
+  useEffect(() => {
+    onColumnSuggestion?.(columnSuggestion);
+  }, [columnSuggestion, onColumnSuggestion]);
 
   // Si se fijó un alto de etiqueta, el contenido se dibuja a su tamaño
   // normal (natural) en un envoltorio interno y luego se le aplica un
@@ -294,6 +311,10 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
   useEffect(() => {
     onOverflowChange?.(heightOverflow);
   }, [heightOverflow, onOverflowChange]);
+
+  useEffect(() => {
+    onScaleChange?.(contentScale);
+  }, [contentScale, onScaleChange]);
 
   const fontSizeRem = baseFontSizeRem;
 

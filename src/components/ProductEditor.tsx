@@ -8,6 +8,10 @@ import { pxToCm } from '../utils/units';
 
 const PRINT_AREA_PADDING_CM = 1; // debe coincidir con ".print-area { padding: 1cm }" en @media print
 const SINGLE_PRINT_STYLE_ID = 'single-label-page-size';
+const BASE_PIXEL_RATIO = 3;
+// Tope para que un contenido reescalado a algo extremo (ej. 0.05) no genere
+// un PNG absurdamente pesado o tarde una eternidad en generarse.
+const MAX_PIXEL_RATIO = 18;
 
 interface Props {
   product: Product;
@@ -21,10 +25,18 @@ export default function ProductEditor({ product, customDictionary, onChange, onB
   const labelRef = useRef<HTMLDivElement>(null);
   const dictionary = useMemo(() => [...customDictionary, ...BASE_DICTIONARY], [customDictionary]);
   const [heightOverflow, setHeightOverflow] = useState(false);
+  const [columnSuggestion, setColumnSuggestion] = useState<number | null>(null);
+  const [contentScale, setContentScale] = useState(1);
 
   async function exportPng() {
     if (!labelRef.current) return;
-    const dataUrl = await toPng(labelRef.current, { pixelRatio: 3, backgroundColor: '#ffffff' });
+    // El contenido se reescala visualmente (transform: scale) para caber en
+    // el alto fijo; sin compensar, html-to-image lo rasteriza a la
+    // resolución "reducida" y sale borroso/pixeleado. Se sube el pixelRatio
+    // en proporción inversa a cuánto se encogió, para que la resolución
+    // final sea la misma que si no se hubiera reescalado nada.
+    const pixelRatio = Math.min(MAX_PIXEL_RATIO, BASE_PIXEL_RATIO / Math.max(contentScale, 0.01));
+    const dataUrl = await toPng(labelRef.current, { pixelRatio, backgroundColor: '#ffffff' });
     const link = document.createElement('a');
     const name = (product.productNameEs || product.productNameEn || 'etiqueta').replace(/\s+/g, '_');
     link.download = `${name}.png`;
@@ -101,8 +113,24 @@ export default function ProductEditor({ product, customDictionary, onChange, onB
                 alguna sección opcional, activa varias columnas, o usa un ancho o alto mayor.
               </div>
             )}
+            {columnSuggestion !== null && (
+              <div className="warning-banner no-print">
+                <strong>⚠ {product.columnCount} columnas dejan espacio en blanco que no tiene arreglo</strong> —
+                uno de los bloques (seguro la tabla nutrimental o ingredientes activos, que no se
+                parten) ya es tan alto por sí solo que ninguna forma de acomodar el resto va a
+                llenar las demás columnas parejo. Con {columnSuggestion} columna
+                {columnSuggestion === 1 ? '' : 's'} en vez de {product.columnCount} se
+                aprovecharía mucho mejor el espacio.
+              </div>
+            )}
             <div className="print-area">
-              <NutritionLabel product={product} ref={labelRef} onOverflowChange={setHeightOverflow} />
+              <NutritionLabel
+                product={product}
+                ref={labelRef}
+                onOverflowChange={setHeightOverflow}
+                onColumnSuggestion={setColumnSuggestion}
+                onScaleChange={setContentScale}
+              />
             </div>
           </div>
         </div>
