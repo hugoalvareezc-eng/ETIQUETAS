@@ -230,16 +230,6 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
   const showSweeteners = sections.seals && sweetenerLegendTriggered(product);
   const unitSuffix = product.isLiquid ? 'ml' : 'g';
   const width = widthCm ?? product.labelWidthCm;
-  const columnWidth =
-    product.columnCount > 1
-      ? (width - COLUMN_GAP_CM * (product.columnCount - 1)) / product.columnCount
-      : width;
-  // La letra (y todo lo demás medido en "em": sellos, rellenos, márgenes) se
-  // escala según el ancho real de cada columna, no el ancho total de la
-  // etiqueta — si no, con varias columnas la letra queda de tamaño normal
-  // aunque cada columna sea angosta, y el texto largo se parte feo a media
-  // palabra en vez de simplemente verse más chico.
-  const baseFontSizeRem = 0.9 * widthScale(columnWidth) * (product.compact ? 0.85 : 1);
 
   const blocks = useMemo(
     () => buildBlocks(product, sections, unitSuffix),
@@ -251,27 +241,59 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
   const blockRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
   const [split, setSplit] = useState<ColumnSplit | null>(null);
   const [columnSuggestion, setColumnSuggestion] = useState<number | null>(null);
+  // Número de columnas que realmente se dibujan: arranca en lo que pidió el
+  // usuario, pero el efecto de abajo lo puede bajar solo (nunca subirlo) si
+  // menos columnas aprovechan mejor el ancho — igual que el alto se
+  // reescala solo a lo que el contenido necesita, en vez de solo avisar y
+  // dejar que la persona lo cambie a mano.
+  const [effectiveColumnCount, setEffectiveColumnCount] = useState<number>(product.columnCount);
 
   useLayoutEffect(() => {
-    if (product.columnCount <= 1) {
+    setEffectiveColumnCount(product.columnCount);
+    // El usuario pidió un número de columnas distinto o cambió el
+    // contenido: se vuelve a partir de ahí: el efecto de abajo decide si
+    // ese número conviene tal cual o si se reduce.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product.columnCount, blocksKey]);
+
+  const columnWidth =
+    effectiveColumnCount > 1
+      ? (width - COLUMN_GAP_CM * (effectiveColumnCount - 1)) / effectiveColumnCount
+      : width;
+  // La letra (y todo lo demás medido en "em": sellos, rellenos, márgenes) se
+  // escala según el ancho real de cada columna, no el ancho total de la
+  // etiqueta — si no, con varias columnas la letra queda de tamaño normal
+  // aunque cada columna sea angosta, y el texto largo se parte feo a media
+  // palabra en vez de simplemente verse más chico.
+  const baseFontSizeRem = 0.9 * widthScale(columnWidth) * (product.compact ? 0.85 : 1);
+
+  useLayoutEffect(() => {
+    if (effectiveColumnCount <= 1) {
       setSplit(null);
       setColumnSuggestion(null);
       return;
     }
     const items = blocks.map((b) => ({ key: b.key, height: blockRefs.current.get(b.key)?.offsetHeight ?? 0 }));
-    setSplit(balanceColumns(items, product.columnCount));
     // Si un bloque que no se puede partir (ej. la tabla nutrimental) ya es
     // tan alto por sí solo que ninguna combinación del resto va a llenar
     // las demás columnas, usar tantas columnas deja espacio en blanco que
-    // no tiene arreglo — se sugiere usar menos.
-    const suggestion = suggestColumnCount(items, product.columnCount);
-    setColumnSuggestion(suggestion < product.columnCount ? suggestion : null);
+    // no tiene arreglo — se baja el número de columnas automáticamente (el
+    // siguiente ciclo del efecto vuelve a medir con el ancho de columna ya
+    // más grande) en vez de solo mostrar una advertencia.
+    const suggestion = suggestColumnCount(items, effectiveColumnCount);
+    if (suggestion < effectiveColumnCount) {
+      setSplit(null);
+      setEffectiveColumnCount(suggestion);
+      return;
+    }
+    setSplit(balanceColumns(items, effectiveColumnCount));
+    setColumnSuggestion(effectiveColumnCount < product.columnCount ? effectiveColumnCount : null);
     // Re-medir cuando cambian los bloques, el ancho de columna, el número de
-    // columnas, o cambia el tamaño de letra (modo compacto): el reparto de
-    // bloques por columna depende de cuánto mide cada uno, y eso cambia con
-    // la letra más chica.
+    // columnas efectivo, o cambia el tamaño de letra (modo compacto): el
+    // reparto de bloques por columna depende de cuánto mide cada uno, y eso
+    // cambia con la letra más chica.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [product.columnCount, blocksKey, columnWidth, product.compact]);
+  }, [effectiveColumnCount, blocksKey, columnWidth, product.compact]);
 
   useEffect(() => {
     onColumnSuggestion?.(columnSuggestion);
@@ -289,7 +311,7 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
   const innerRef = useRef<HTMLDivElement | null>(null);
   const [contentScale, setContentScale] = useState(1);
   const [heightOverflow, setHeightOverflow] = useState(false);
-  const fitSignature = `${product.labelHeightCm}|${blocksKey}|${width}|${product.compact}|${product.columnCount}|${split ? 'split' : 'nosplit'}`;
+  const fitSignature = `${product.labelHeightCm}|${blocksKey}|${width}|${product.compact}|${effectiveColumnCount}|${split ? 'split' : 'nosplit'}`;
 
   useLayoutEffect(() => {
     if (!product.labelHeightCm) {
@@ -318,7 +340,7 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
 
   const fontSizeRem = baseFontSizeRem;
 
-  const showBalanced = product.columnCount > 1 && split;
+  const showBalanced = effectiveColumnCount > 1 && split;
   const blockMap = new Map(blocks.map((b) => [b.key, b]));
 
   function renderBlock(block: Block) {
@@ -401,7 +423,7 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
           </div>
         ) : (
           <div className="label-body">
-            {product.columnCount > 1 ? (
+            {effectiveColumnCount > 1 ? (
               // Primer render mientras se mide cada bloque a su ancho de columna final.
               <div style={{ width: `${columnWidth}cm` }}>{blocks.map(renderBlock)}</div>
             ) : (

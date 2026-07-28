@@ -114,13 +114,12 @@ export default function ProductEditor({ product, customDictionary, onChange, onB
               </div>
             )}
             {columnSuggestion !== null && (
-              <div className="warning-banner no-print">
-                <strong>⚠ {product.columnCount} columnas dejan espacio en blanco que no tiene arreglo</strong> —
-                uno de los bloques (seguro la tabla nutrimental o ingredientes activos, que no se
-                parten) ya es tan alto por sí solo que ninguna forma de acomodar el resto va a
-                llenar las demás columnas parejo. Con {columnSuggestion} columna
-                {columnSuggestion === 1 ? '' : 's'} en vez de {product.columnCount} se
-                aprovecharía mucho mejor el espacio.
+              <div className="hint no-print">
+                ℹ Se usaron {columnSuggestion} columna{columnSuggestion === 1 ? '' : 's'} en vez de
+                las {product.columnCount} que pediste — uno de los bloques (seguro la tabla
+                nutrimental o ingredientes activos, que no se pueden partir) ya era tan alto por sí
+                solo que ninguna forma de acomodar el resto iba a llenar las demás columnas parejo,
+                así que se ajustó solo para no dejar espacio en blanco tirado.
               </div>
             )}
             <div className="print-area">
