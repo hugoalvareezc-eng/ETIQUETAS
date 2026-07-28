@@ -12,15 +12,12 @@ interface Props {
   onOverflowChange?: (overflowing: boolean) => void;
 }
 
-// Alto mínimo al que se permite encoger la letra para que el contenido quepa
-// en un alto fijo, antes de simplemente avisar que ya no cabe.
-const MIN_HEIGHT_FIT_SCALE = 0.6;
-// Tamaño de letra absoluto más chico permitido, sin importar cuánto se
-// combinen el achicado por ancho (columnas angostas) y por alto fijo: por
-// debajo de esto el texto deja de ser legible aunque "matemáticamente" quepa.
-// Si ni a este tamaño cabe, se prefiere que la etiqueta crezca más alta de lo
-// pedido (ver heightOverflow) a volverse ilegible.
-const ABSOLUTE_MIN_FONT_REM = 0.5;
+// El alto fijo que se pida SIEMPRE debe respetarse: la letra se encoge lo
+// que haga falta para que el contenido quepa, sin piso "de legibilidad" que
+// lo impida. Este piso es solo una red de seguridad técnica (evitar
+// font-size 0/negativo, que rompe el render), no un límite de diseño.
+const MIN_HEIGHT_FIT_SCALE = 0.02;
+const ABSOLUTE_MIN_FONT_REM = 0.05;
 
 interface Block {
   key: string;
@@ -309,9 +306,10 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
 
     const el = rootRef.current;
     if (!el) return;
-    // scrollHeight (no offsetHeight) porque el propio div ya trae
-    // "overflow: hidden" + alto fijo por CSS; offsetHeight reportaría el
-    // alto ya recortado en vez del alto real que pide el contenido.
+    // scrollHeight (no offsetHeight): con alto fijo por CSS, offsetHeight
+    // se queda en ese alto fijo aunque el contenido sea más alto; scrollHeight
+    // sí reporta el alto real que pide el contenido, para calcular cuánto
+    // hay que encoger la letra para que quepa.
     const naturalCm = pxToCm(el.scrollHeight);
     const targetCm = product.labelHeightCm as number;
     fitPhase.current = { signature: fitSignature, phase: 'done' };
