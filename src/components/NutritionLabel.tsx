@@ -4,20 +4,13 @@ import { per100g, computeSeals, caffeineLegendTriggered, sweetenerLegendTriggere
 import { categoryLabel } from '../data/categories';
 import { getSections } from '../utils/sections';
 import { balanceColumns, ColumnSplit } from '../utils/balanceColumns';
-import { pxToCm } from '../utils/units';
+import { cmToPx } from '../utils/units';
 
 interface Props {
   product: Product;
   widthCm?: number;
   onOverflowChange?: (overflowing: boolean) => void;
 }
-
-// El alto fijo que se pida SIEMPRE debe respetarse: la letra se encoge lo
-// que haga falta para que el contenido quepa, sin piso "de legibilidad" que
-// lo impida. Este piso es solo una red de seguridad técnica (evitar
-// font-size 0/negativo, que rompe el render), no un límite de diseño.
-const MIN_HEIGHT_FIT_SCALE = 0.02;
-const ABSOLUTE_MIN_FONT_REM = 0.05;
 
 interface Block {
   key: string;
@@ -267,72 +260,42 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product.columnCount, blocksKey, columnWidth, product.compact]);
 
-  // Si se fijó un alto de etiqueta, encoge la letra lo necesario para que el
-  // contenido quepa dentro de ese alto (con un piso mínimo de legibilidad).
-  // Si ni así cabe, se avisa hacia afuera con onOverflowChange en vez de
-  // dejar que el contenido se desborde silenciosamente.
+  // Si se fijó un alto de etiqueta, el contenido se dibuja a su tamaño
+  // normal (natural) en un envoltorio interno y luego se le aplica un
+  // "transform: scale()" para que quepa exacto en ese alto — igual que
+  // reescalar una imagen grande a una más chica, en vez de ir probando
+  // tamaños de letra distintos hasta que quepa. transform no cambia el
+  // layout/reflow del texto, así que scrollHeight siempre mide el alto
+  // natural real sin importar qué tan chico se esté mostrando, y el
+  // cálculo es exacto en una sola pasada (nunca se desborda).
   const rootRef = useRef<HTMLDivElement | null>(null);
-  const [heightFitScale, setHeightFitScale] = useState(1);
+  const innerRef = useRef<HTMLDivElement | null>(null);
+  const [contentScale, setContentScale] = useState(1);
   const [heightOverflow, setHeightOverflow] = useState(false);
   const fitSignature = `${product.labelHeightCm}|${blocksKey}|${width}|${product.compact}|${product.columnCount}|${split ? 'split' : 'nosplit'}`;
-  // El ajuste de escala por alto fijo mide una sola vez por firma de
-  // contenido y ya no vuelve a tocar el estado después de eso. El
-  // texto puede reacomodarse en renglones distintos según el tamaño de
-  // letra, así que "medir -> ajustar -> volver a medir" puede no converger
-  // nunca y generar un ciclo infinito de renders; por eso aquí se acepta
-  // una sola pasada (aproximada) en vez de iterar hasta encajar exacto.
-  const fitPhase = useRef<{ signature: string; phase: 'measuring' | 'done' }>({
-    signature: '',
-    phase: 'done',
-  });
 
   useLayoutEffect(() => {
     if (!product.labelHeightCm) {
-      if (heightFitScale !== 1) setHeightFitScale(1);
+      if (contentScale !== 1) setContentScale(1);
       if (heightOverflow) setHeightOverflow(false);
-      fitPhase.current = { signature: fitSignature, phase: 'done' };
       return;
     }
-
-    if (fitPhase.current.signature !== fitSignature) {
-      fitPhase.current = { signature: fitSignature, phase: 'measuring' };
-      if (heightFitScale !== 1) {
-        setHeightFitScale(1);
-        return; // se mide en el siguiente pase, ya renderizado a escala 1
-      }
-    }
-
-    if (fitPhase.current.phase === 'done') return;
-
-    const el = rootRef.current;
+    const el = innerRef.current;
     if (!el) return;
-    // scrollHeight (no offsetHeight): con alto fijo por CSS, offsetHeight
-    // se queda en ese alto fijo aunque el contenido sea más alto; scrollHeight
-    // sí reporta el alto real que pide el contenido, para calcular cuánto
-    // hay que encoger la letra para que quepa.
-    const naturalCm = pxToCm(el.scrollHeight);
-    const targetCm = product.labelHeightCm as number;
-    fitPhase.current = { signature: fitSignature, phase: 'done' };
-    if (naturalCm > targetCm + 0.02) {
-      const needed = Math.max(MIN_HEIGHT_FIT_SCALE, targetCm / naturalCm);
-      setHeightFitScale(needed);
-      // También cuenta como "no cabe" si la letra resultante (ya combinada
-      // con el achicado por ancho de columna) quedaría por debajo del piso
-      // de legibilidad absoluto, aunque la proporción alto/necesario no
-      // haya tocado todavía el piso de MIN_HEIGHT_FIT_SCALE.
-      const wouldBeIllegible = needed * baseFontSizeRem < ABSOLUTE_MIN_FONT_REM;
-      setHeightOverflow(needed <= MIN_HEIGHT_FIT_SCALE + 0.001 || wouldBeIllegible);
-    } else {
-      setHeightOverflow(false);
-    }
+    const naturalPx = el.scrollHeight;
+    const targetPx = cmToPx(product.labelHeightCm as number);
+    if (!naturalPx || !isFinite(naturalPx)) return;
+    const needed = Math.min(1, targetPx / naturalPx);
+    setContentScale(isFinite(needed) && needed > 0 ? needed : 1);
+    setHeightOverflow(!isFinite(needed) || needed <= 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fitSignature, heightFitScale]);
+  }, [fitSignature]);
 
   useEffect(() => {
     onOverflowChange?.(heightOverflow);
   }, [heightOverflow, onOverflowChange]);
 
-  const fontSizeRem = Math.max(ABSOLUTE_MIN_FONT_REM, baseFontSizeRem * heightFitScale);
+  const fontSizeRem = baseFontSizeRem;
 
   const showBalanced = product.columnCount > 1 && split;
   const blockMap = new Map(blocks.map((b) => [b.key, b]));
@@ -356,19 +319,12 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
       data-compact={product.compact ? 'true' : undefined}
       style={{
         width: `${width}cm`,
-        fontSize: `${fontSizeRem.toFixed(3)}rem`,
-        // El alto fijo que pide el usuario SIEMPRE se respeta tal cual —
-        // nunca se agranda la etiqueta por su cuenta, porque casi siempre
-        // corresponde a una hoja de etiquetas físicas de tamaño exacto (ni
-        // un mm más). Si el contenido no cabe ni encogiendo la letra al
-        // mínimo legible, "overflow: visible" hace que se vea claramente
-        // desbordado en pantalla (nunca invisible/recortado en silencio) —
-        // el aviso de arriba explica que hay que quitar contenido, no que
-        // la etiqueta se vaya a hacer más grande sola.
+        // El alto fijo que pide el usuario SIEMPRE se respeta tal cual: el
+        // contenido se dibuja a tamaño normal en el envoltorio interno y se
+        // reescala completo (como una imagen) para que quepa exacto — nunca
+        // se agranda la etiqueta ni se deja "salir" nada de esta caja.
         position: 'relative',
-        ...(product.labelHeightCm
-          ? { height: `${product.labelHeightCm}cm`, overflow: 'visible' }
-          : null),
+        ...(product.labelHeightCm ? { height: `${product.labelHeightCm}cm`, overflow: 'hidden' } : null),
       }}
       ref={(el) => {
         rootRef.current = el;
@@ -376,57 +332,67 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
         else if (ref) (ref as MutableRefObject<HTMLDivElement | null>).current = el;
       }}
     >
-      {sections.header && (
-        <div className="label-brand">
-          <span className="badge">{categoryLabel(product.category)}</span>
-          <h2>{product.productNameEs || 'Nombre del producto'}</h2>
-          <p className="muted">
-            {product.brand} {product.flavor && `· Sabor: ${product.flavor}`}
-            {product.netContent && ` · Contenido neto: ${product.netContent}`}
-          </p>
-        </div>
-      )}
+      <div
+        className="nutrition-label-inner"
+        ref={innerRef}
+        style={{
+          fontSize: `${fontSizeRem.toFixed(3)}rem`,
+          ...(contentScale < 1
+            ? { transform: `scale(${contentScale})`, transformOrigin: 'top left' }
+            : null),
+        }}
+      >
+        {sections.header && (
+          <div className="label-brand">
+            <span className="badge">{categoryLabel(product.category)}</span>
+            <h2>{product.productNameEs || 'Nombre del producto'}</h2>
+            <p className="muted">
+              {product.brand} {product.flavor && `· Sabor: ${product.flavor}`}
+              {product.netContent && ` · Contenido neto: ${product.netContent}`}
+            </p>
+          </div>
+        )}
 
-      {seals.length > 0 && (
-        <div className="seals-row">
-          {seals.map((s) => (
-            <div key={s.id} className="seal" title={s.detail}>
-              {s.label}
-            </div>
-          ))}
-        </div>
-      )}
+        {seals.length > 0 && (
+          <div className="seals-row">
+            {seals.map((s) => (
+              <div key={s.id} className="seal" title={s.detail}>
+                {s.label}
+              </div>
+            ))}
+          </div>
+        )}
 
-      {(showCaffeine || showSweeteners) && (
-        <div className="legends">
-          {showCaffeine && <div className="legend">CONTIENE CAFEÍNA. EVITAR EN NIÑOS.</div>}
-          {showSweeteners && <div className="legend">CONTIENE EDULCORANTES, NO RECOMENDABLE EN NIÑOS.</div>}
-        </div>
-      )}
+        {(showCaffeine || showSweeteners) && (
+          <div className="legends">
+            {showCaffeine && <div className="legend">CONTIENE CAFEÍNA. EVITAR EN NIÑOS.</div>}
+            {showSweeteners && <div className="legend">CONTIENE EDULCORANTES, NO RECOMENDABLE EN NIÑOS.</div>}
+          </div>
+        )}
 
-      {showBalanced ? (
-        <div className="label-body label-body-balanced" style={{ gap: `${COLUMN_GAP_CM}cm` }}>
-          {split!.map((columnKeys, i) => (
-            <div key={i} className="label-column" style={{ width: `${columnWidth}cm` }}>
-              {columnKeys.map((key) => blockMap.get(key)).filter((b): b is Block => !!b).map(renderBlock)}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="label-body">
-          {product.columnCount > 1 ? (
-            // Primer render mientras se mide cada bloque a su ancho de columna final.
-            <div style={{ width: `${columnWidth}cm` }}>{blocks.map(renderBlock)}</div>
-          ) : (
-            blocks.map(renderBlock)
-          )}
-        </div>
-      )}
+        {showBalanced ? (
+          <div className="label-body label-body-balanced" style={{ gap: `${COLUMN_GAP_CM}cm` }}>
+            {split!.map((columnKeys, i) => (
+              <div key={i} className="label-column" style={{ width: `${columnWidth}cm` }}>
+                {columnKeys.map((key) => blockMap.get(key)).filter((b): b is Block => !!b).map(renderBlock)}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="label-body">
+            {product.columnCount > 1 ? (
+              // Primer render mientras se mide cada bloque a su ancho de columna final.
+              <div style={{ width: `${columnWidth}cm` }}>{blocks.map(renderBlock)}</div>
+            ) : (
+              blocks.map(renderBlock)
+            )}
+          </div>
+        )}
+      </div>
       {heightOverflow && product.labelHeightCm && (
-        // Marca exactamente dónde termina el alto físico que se pidió: todo
-        // lo que quede debajo de esta línea no cabe en la etiqueta real, es
-        // "fantasma" (se ve en pantalla para no ocultar datos, pero no forma
-        // parte del tamaño configurado ni de la página de impresión).
+        // Con el reescalado por transform esto ya casi nunca debería
+        // pasar (matemáticamente el contenido siempre cabe); se deja como
+        // red de seguridad para casos degenerados (ej. alto fijo de 0).
         <div
           className="no-print"
           style={{
