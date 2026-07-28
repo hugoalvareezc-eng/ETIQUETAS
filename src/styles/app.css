@@ -550,6 +550,12 @@ textarea {
 
 .nutrimental-table {
   width: 100%;
+  /* Sin esto, el navegador agranda las columnas de la tabla para que
+     quepa el texto largo (nombres de ingredientes, descripciones) sin
+     partirlo, ignorando el ancho de etiqueta que se pidió. Con "fixed"
+     la tabla sí respeta su contenedor y el texto se parte en vez de
+     desbordar. */
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: 0.82em;
 }
@@ -559,6 +565,8 @@ textarea {
   border-bottom: 1px solid #ccc;
   padding: 0.25em 0.3em;
   text-align: left;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .nutrimental-table tr.indent td:first-child {
