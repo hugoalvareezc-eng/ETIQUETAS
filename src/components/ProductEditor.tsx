@@ -105,12 +105,12 @@ export default function ProductEditor({ product, customDictionary, onChange, onB
             </p>
             {heightOverflow && (
               <div className="warning-banner no-print">
-                <strong>⚠ Hay muchísimo contenido para el alto fijo que pusiste</strong> — la
-                letra ya se encogió al máximo posible y aun así no alcanza (esto pasa con
-                cantidades de contenido extremas, no en el uso normal). El tamaño de la etiqueta
-                se respeta tal cual lo indicaste; lo que sobra se ve desbordado abajo solo para
-                que no se pierda información sin que te enteres. Para que quepa de verdad, quita
-                alguna sección opcional, activa varias columnas, o usa un ancho o alto mayor.
+                <strong>⚠ Hay muchísimo contenido para el tamaño que pusiste</strong> — el
+                contenido ya se reacomodó y se encogió al máximo posible y aun así no alcanza
+                (esto pasa con cantidades de contenido extremas, no en el uso normal). El tamaño
+                de la etiqueta se respeta tal cual lo indicaste; lo que sobra se ve desbordado
+                abajo solo para que no se pierda información sin que te enteres. Para que quepa
+                de verdad, quita alguna sección opcional o usa un ancho o alto mayor.
               </div>
             )}
             {columnSuggestion !== null && (

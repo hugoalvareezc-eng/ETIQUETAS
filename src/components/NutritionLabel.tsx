@@ -30,6 +30,24 @@ export const COLUMN_GAP_CM = 0.5;
 const BASELINE_WIDTH_CM = 9;
 const MIN_WIDTH_SCALE = 0.45;
 
+// Búsqueda del ancho de "lienzo" interno con el que el contenido, ya
+// reescalado para que el ancho quede exacto, también llena el alto pedido.
+const MAX_FIT_ITERATIONS = 14;
+const FIT_TOLERANCE_PX = 1.5;
+// scrollHeight viene redondeado a entero y los sub-píxeles de cada bloque se
+// van acumulando, así que el alto medido puede quedar un pelo corto del real.
+// Este colchón (~0.1 mm impreso) asegura que el contenido nunca termine
+// recortado por el borde de abajo.
+const FIT_SAFETY_PX = 5;
+// Hasta dónde se permite estirar o encoger ese lienzo respecto al ancho
+// pedido. Los extremos solo se alcanzan con contenidos absurdos.
+const MIN_LAYOUT_FACTOR = 0.4;
+const MAX_LAYOUT_FACTOR = 6;
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
 function fmt(n: number): string {
   if (!isFinite(n)) return '0';
   return Number(n.toFixed(2)).toString();
@@ -237,6 +255,17 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
     [product, unitSuffix],
   );
   const blocksKey = blocks.map((b) => b.key).join(',');
+  // blocksKey solo dice QUÉ bloques hay, no qué dicen: dos productos
+  // distintos con las mismas secciones activadas dan exactamente la misma
+  // llave. Sin esta huella del contenido real, al saltar de un producto a
+  // otro con las mismas medidas se reutilizaba el ajuste del anterior y la
+  // etiqueta quedaba mal medida.
+  const contentFingerprint = useMemo(() => {
+    const raw = JSON.stringify(product);
+    let hash = 0;
+    for (let i = 0; i < raw.length; i++) hash = (hash * 31 + raw.charCodeAt(i)) | 0;
+    return `${raw.length}:${hash}`;
+  }, [product]);
 
   const blockRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
   const [split, setSplit] = useState<ColumnSplit | null>(null);
@@ -254,12 +283,17 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
     // contenido: se vuelve a partir de ahí: el efecto de abajo decide si
     // ese número conviene tal cual o si se reduce.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [product.columnCount, blocksKey]);
+  }, [product.columnCount, contentFingerprint]);
 
+  // Ancho del "lienzo" interno donde se acomoda el contenido antes de
+  // reescalarlo. Normalmente es el ancho pedido; cuando hay alto fijo, el
+  // efecto de ajuste lo mueve hasta encontrar el que llena la etiqueta
+  // completa (ver comentario largo más abajo).
+  const [layoutWidthCm, setLayoutWidthCm] = useState(width);
   const columnWidth =
     effectiveColumnCount > 1
-      ? (width - COLUMN_GAP_CM * (effectiveColumnCount - 1)) / effectiveColumnCount
-      : width;
+      ? (layoutWidthCm - COLUMN_GAP_CM * (effectiveColumnCount - 1)) / effectiveColumnCount
+      : layoutWidthCm;
   // La letra (y todo lo demás medido en "em": sellos, rellenos, márgenes) se
   // escala según el ancho real de cada columna, no el ancho total de la
   // etiqueta — si no, con varias columnas la letra queda de tamaño normal
@@ -280,11 +314,16 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
     // no tiene arreglo — se baja el número de columnas automáticamente (el
     // siguiente ciclo del efecto vuelve a medir con el ancho de columna ya
     // más grande) en vez de solo mostrar una advertencia.
-    const suggestion = suggestColumnCount(items, effectiveColumnCount);
-    if (suggestion < effectiveColumnCount) {
-      setSplit(null);
-      setEffectiveColumnCount(suggestion);
-      return;
+    // Esa decisión se toma solo con el lienzo en su ancho base: durante la
+    // búsqueda de ajuste el lienzo cambia de ancho a propósito, y no
+    // queremos que eso ande moviendo el número de columnas de ida y vuelta.
+    if (layoutWidthCm === width) {
+      const suggestion = suggestColumnCount(items, effectiveColumnCount);
+      if (suggestion < effectiveColumnCount) {
+        setSplit(null);
+        setEffectiveColumnCount(suggestion);
+        return;
+      }
     }
     setSplit(balanceColumns(items, effectiveColumnCount));
     setColumnSuggestion(effectiveColumnCount < product.columnCount ? effectiveColumnCount : null);
@@ -293,42 +332,110 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
     // reparto de bloques por columna depende de cuánto mide cada uno, y eso
     // cambia con la letra más chica.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [effectiveColumnCount, blocksKey, columnWidth, product.compact]);
+  }, [effectiveColumnCount, blocksKey, columnWidth, product.compact, layoutWidthCm, width]);
 
   useEffect(() => {
     onColumnSuggestion?.(columnSuggestion);
   }, [columnSuggestion, onColumnSuggestion]);
 
-  // Si se fijó un alto de etiqueta, el contenido se dibuja a su tamaño
-  // normal (natural) en un envoltorio interno y luego se le aplica un
-  // "transform: scale()" para que quepa exacto en ese alto — igual que
-  // reescalar una imagen grande a una más chica, en vez de ir probando
-  // tamaños de letra distintos hasta que quepa. transform no cambia el
-  // layout/reflow del texto, así que scrollHeight siempre mide el alto
-  // natural real sin importar qué tan chico se esté mostrando, y el
-  // cálculo es exacto en una sola pasada (nunca se desborda).
+  // Cómo se llena la etiqueta completa (ancho Y alto) sin salirse:
+  //
+  // Reescalar el contenido para que quepa de alto también lo angosta — un
+  // scale(0.6) deja el contenido al 60% del ancho, o sea una franja en
+  // blanco a la derecha. Por eso el contenido NO se arma al ancho final:
+  // se arma en un "lienzo" interno de ancho variable y se reescala por el
+  // factor exacto ancho_pedido / ancho_lienzo, así el ancho SIEMPRE queda
+  // clavado sin importar cuánto se haya encogido o agrandado.
+  //
+  // Falta entonces escoger el ancho de lienzo con el que el alto también
+  // dé justo. Al ensanchar el lienzo el contenido fluye más ancho y
+  // necesita menos alto, así que se busca el ancho donde
+  // alto_natural * (ancho_pedido / ancho_lienzo) == alto_pedido. Como el
+  // alto va casi inverso al ancho, cada vuelta multiplica el ancho por
+  // sqrt(alto_que_dio / alto_pedido) y se llega en pocas pasadas.
   const rootRef = useRef<HTMLDivElement | null>(null);
   const innerRef = useRef<HTMLDivElement | null>(null);
-  const [contentScale, setContentScale] = useState(1);
   const [heightOverflow, setHeightOverflow] = useState(false);
-  const fitSignature = `${product.labelHeightCm}|${blocksKey}|${width}|${product.compact}|${effectiveColumnCount}|${split ? 'split' : 'nosplit'}`;
+  // El ancho final siempre sale exacto por construcción.
+  const contentScale = layoutWidthCm > 0 ? width / layoutWidthCm : 1;
+  const fitSignature = `${product.labelHeightCm}|${contentFingerprint}|${width}|${product.compact}|${effectiveColumnCount}`;
+  const fitRef = useRef<{ signature: string; iter: number; bestFit: number | null }>({
+    signature: '',
+    iter: 0,
+    bestFit: null,
+  });
 
   useLayoutEffect(() => {
-    if (!product.labelHeightCm) {
-      if (contentScale !== 1) setContentScale(1);
+    const el = innerRef.current;
+    if (!el) return;
+
+    // Sin alto fijo no hay nada que ajustar: se dibuja al ancho pedido tal cual.
+    if (!product.labelHeightCm || width <= 0) {
+      fitRef.current = { signature: fitSignature, iter: 0, bestFit: null };
+      if (layoutWidthCm !== width) setLayoutWidthCm(width);
       if (heightOverflow) setHeightOverflow(false);
       return;
     }
-    const el = innerRef.current;
-    if (!el) return;
-    const naturalPx = el.scrollHeight;
-    const targetPx = cmToPx(product.labelHeightCm as number);
-    if (!naturalPx || !isFinite(naturalPx)) return;
-    const needed = Math.min(1, targetPx / naturalPx);
-    setContentScale(isFinite(needed) && needed > 0 ? needed : 1);
-    setHeightOverflow(!isFinite(needed) || needed <= 0);
+
+    // Cambió el contenido o el tamaño pedido: se reinicia la búsqueda.
+    if (fitRef.current.signature !== fitSignature) {
+      fitRef.current = { signature: fitSignature, iter: 0, bestFit: null };
+      if (layoutWidthCm !== width) {
+        setLayoutWidthCm(width);
+        return;
+      }
+    }
+
+    const targetWpx = cmToPx(width);
+    const targetHpx = cmToPx(product.labelHeightCm as number);
+    const layoutWpx = cmToPx(layoutWidthCm);
+    const naturalHpx = el.scrollHeight;
+    if (!naturalHpx || !layoutWpx || !targetHpx) return;
+
+    // Alto que va a quedar una vez reescalado para que el ancho dé exacto.
+    const scaledHpx = (naturalHpx * targetWpx) / layoutWpx;
+    // Se apunta a un pelín menos del alto real (el colchón de seguridad):
+    // así el redondeo nunca termina recortando la última línea.
+    const usableTargetHpx = Math.max(1, targetHpx - FIT_SAFETY_PX);
+
+    // Solo cuenta como candidato el lienzo que cabe de verdad. Nos quedamos
+    // con el más angosto que quepa, que es el que deja la letra más grande
+    // y menos hueco abajo.
+    const overshooting = scaledHpx > usableTargetHpx;
+    if (!overshooting && (fitRef.current.bestFit === null || layoutWidthCm < fitRef.current.bestFit)) {
+      fitRef.current.bestFit = layoutWidthCm;
+    }
+
+    let nextWidthCm = clamp(
+      layoutWidthCm * Math.sqrt(scaledHpx / usableTargetHpx),
+      width * MIN_LAYOUT_FACTOR,
+      width * MAX_LAYOUT_FACTOR,
+    );
+    // Si estamos apenas pasados, el paso calculado es minúsculo y nos
+    // dejaría parados justo por encima del límite: se ensancha a propósito
+    // hasta bajar del borde.
+    if (overshooting && nextWidthCm - layoutWidthCm < 0.01) {
+      nextWidthCm = clamp(layoutWidthCm * 1.01, width * MIN_LAYOUT_FACTOR, width * MAX_LAYOUT_FACTOR);
+    }
+    const stalled = Math.abs(nextWidthCm - layoutWidthCm) < 0.005;
+    const converged =
+      (!overshooting && usableTargetHpx - scaledHpx <= FIT_TOLERANCE_PX) ||
+      (fitRef.current.bestFit !== null && stalled) ||
+      fitRef.current.iter >= MAX_FIT_ITERATIONS;
+
+    if (converged) {
+      // Siempre se aterriza en un lienzo que sí cabe, nunca en uno que se
+      // pase: entre quedar corto y salirse, se queda corto.
+      const finalWidthCm = fitRef.current.bestFit ?? layoutWidthCm;
+      setHeightOverflow(fitRef.current.bestFit === null);
+      if (finalWidthCm !== layoutWidthCm) setLayoutWidthCm(finalWidthCm);
+      return;
+    }
+
+    fitRef.current.iter += 1;
+    setLayoutWidthCm(nextWidthCm);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fitSignature]);
+  }, [fitSignature, layoutWidthCm, split]);
 
   useEffect(() => {
     onOverflowChange?.(heightOverflow);
@@ -380,7 +487,11 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
         ref={innerRef}
         style={{
           fontSize: `${fontSizeRem.toFixed(3)}rem`,
-          ...(contentScale < 1
+          // El contenido se acomoda a este ancho y luego se reescala al
+          // ancho real de la etiqueta: por eso el ancho siempre queda
+          // exacto, sin franja en blanco a la derecha.
+          width: `${layoutWidthCm}cm`,
+          ...(contentScale !== 1
             ? { transform: `scale(${contentScale})`, transformOrigin: 'top left' }
             : null),
         }}
