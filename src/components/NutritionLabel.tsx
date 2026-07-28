@@ -356,6 +356,7 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
         // desbordado en pantalla (nunca invisible/recortado en silencio) —
         // el aviso de arriba explica que hay que quitar contenido, no que
         // la etiqueta se vaya a hacer más grande sola.
+        position: 'relative',
         ...(product.labelHeightCm
           ? { height: `${product.labelHeightCm}cm`, overflow: 'visible' }
           : null),
@@ -410,6 +411,38 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
           ) : (
             blocks.map(renderBlock)
           )}
+        </div>
+      )}
+      {heightOverflow && product.labelHeightCm && (
+        // Marca exactamente dónde termina el alto físico que se pidió: todo
+        // lo que quede debajo de esta línea no cabe en la etiqueta real, es
+        // "fantasma" (se ve en pantalla para no ocultar datos, pero no forma
+        // parte del tamaño configurado ni de la página de impresión).
+        <div
+          className="no-print"
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: `${product.labelHeightCm}cm`,
+            borderTop: '2px dashed #d33',
+            textAlign: 'center',
+            zIndex: 1,
+          }}
+        >
+          <span
+            style={{
+              position: 'relative',
+              top: '-0.6em',
+              background: '#fff',
+              color: '#d33',
+              fontSize: '0.65rem',
+              fontWeight: 700,
+              padding: '0 0.4em',
+            }}
+          >
+            ↑ fin de la etiqueta ({product.labelHeightCm} cm) — lo de abajo no cabe ↓
+          </span>
         </div>
       )}
     </div>
