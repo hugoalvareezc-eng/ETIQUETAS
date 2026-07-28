@@ -332,7 +332,12 @@ const NutritionLabel = forwardRef<HTMLDivElement, Props>(({ product, widthCm, on
       style={{
         width: `${width}cm`,
         fontSize: `${fontSizeRem.toFixed(3)}rem`,
-        ...(product.labelHeightCm
+        // Si el contenido no cabe ni encogiendo la letra al mínimo legible
+        // (heightOverflow), se deja crecer la etiqueta más allá del alto
+        // fijo en vez de recortarla con "overflow: hidden": es preferible
+        // una etiqueta más alta de lo pedido a perder en silencio datos
+        // obligatorios (advertencias, ingredientes, tabla nutrimental).
+        ...(product.labelHeightCm && !heightOverflow
           ? { height: `${product.labelHeightCm}cm`, overflow: 'hidden' }
           : null),
       }}
